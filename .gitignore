@@ -1,0 +1,6 @@
+.env
+prove/
+output/
+.vscode/
+__pycache__/
+database/
