@@ -1,4 +1,4 @@
-def run_queries(collection, queries, n_results=3):
+def run_queries(collection, queries, n_results=2):
     """
     Esegue le query sulla collection ChromaDB e stampa in modo leggibile i risultati.
     Mostra: distanza semantica, pagina, tipo e contenuto di ogni chunk.
