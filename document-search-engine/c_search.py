@@ -17,7 +17,7 @@ def run_queries(collection, queries, n_results=3):
 
         for i, (doc, meta, dist) in enumerate(zip(docs, metas, dists)):
             print(f"\n--- Risultato {i+1} (dist={dist:.4f}) ---")
-            print(f"Pagina: {meta.get('page', 'N/A')} | Tipo: {meta.get('type', 'N/A')}")
+            print(f"PDF: {meta.get('source_pdf', 'N/A')} | Pagina: {meta.get('page', 'N/A')} | Tipo: {meta.get('type', 'N/A')}")
             print("Contenuto:")
             for line in doc.strip().split('\n'):
                 print(f"  {line}")
