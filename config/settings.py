@@ -130,3 +130,6 @@ LOGOUT_REDIRECT_URL = '/'  # Redirect to login after logout
 # Configuration for User-Uploaded Files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# Impostazioni che chiude la sessione alla chiusura del browser
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
