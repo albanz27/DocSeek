@@ -1,0 +1,10 @@
+<h2>Log In to DocSeek</h2>
+
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Log In</button>
+</form>
+
+<p>Don't have an account? <a href="{% url 'register' %}">Sign Up</a></p>
+<p><a href="{% url 'password_reset' %}">Forgot password?</a></p>

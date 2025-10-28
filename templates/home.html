@@ -1,0 +1,13 @@
+<h1>Welcome to DocSeek!</h1>
+
+{% if user.is_authenticated %}
+    <p>Hello, {{ user.username }}. You are logged in.</p>
+    <p>Your roles:
+        Uploader: {{ user.profile.is_uploader }}
+        Searcher: {{ user.profile.is_searcher }}
+    </p>
+    <p><a href="{% url 'logout' %}">Log Out</a></p>
+{% else %}
+    <p>You are not logged in.</p>
+    <p>Please <a href="{% url 'login' %}">Log In</a> or <a href="{% url 'register' %}">Sign Up</a>.</p>
+{% endif %}
