@@ -1,0 +1,11 @@
+<h1>Upload New Document</h1>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %} 
+    
+    {{ form.as_p }}  
+    
+    <button type="submit">Upload & Process</button>
+</form>
+
+<p><a href="{% url 'home' %}">Go back home</a></p>
