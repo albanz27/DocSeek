@@ -1,12 +1,14 @@
-<h1>Process Document: {{ document.title }}</h1>
-<p>File uploaded at: {{ document.uploaded_at|date:"Y-m-d H:i" }}</p>
+{% extends 'base.html' %} 
 
-<form method="POST">
-    {% csrf_token %} 
-    
-    {{ form.as_p }}  
-    
-    <button type="submit">Finalize Processing</button>
-</form>
+{% block content %}
+    <h1>Process Document: {{ document.title }}</h1>
+    <p>File uploaded at: {{ document.uploaded_at|date:"Y-m-d H:i" }}</p>
 
-<p><a href="{% url 'document_list' %}">Go back to Document List</a></p>
+    <form method="POST">
+        {% csrf_token %} 
+        
+        {{ form.as_p }}  
+        
+        <button type="submit">Finalize Processing</button>
+    </form>
+{% endblock content %}

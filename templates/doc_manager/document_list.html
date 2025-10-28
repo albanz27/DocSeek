@@ -1,41 +1,47 @@
-<h1>Document Search and List</h1>
+{% extends 'base.html' %} 
 
-{% if user.profile.is_searcher %}
-    <form method="GET" action="{% url 'document_list' %}">
-        <input type="text" name="q" placeholder="Search by document title...">
-        <button type="submit">Search</button>
-    </form>
+{% block content %}
     
-    <hr>
+    <h1>Document Search and List</h1>
 
-{% if documents %}
-        <h2>Results (Total: {{ documents.count }})</h2>
-        <ul>
-            {% for doc in documents %}
-                <li>
-                    <strong>Title:</strong> {{ doc.title }} 
-                    <small>| Uploaded by: {{ doc.uploader.username }}</small>
-                    <p>Processed: {% if doc.is_processed %}✅{% else %}❌{% endif %}</p>
+    {% if user.profile.is_searcher %}
+        <form method="GET" action="{% url 'document_list' %}">
+            <input type="text" name="q" placeholder="Search by document title...">
+            <button type="submit">Search</button>
+        </form>
+        
+        <hr>
 
-                    {% if doc.uploader == user %}
-                        {% if not doc.is_processed %}
-                            <p>
-                                <a href="{% url 'document_process' doc.pk %}">
-                                    ▶️ Process Document
-                                </a>
-                            </p>
-                        {% else %}
-                            <p>Output Snippet: {{ doc.processing_output|truncatechars:50 }}</p>
+        {% if documents %}
+            <h2>Results (Total: {{ documents.count }})</h2>
+            <ul>
+                {% for doc in documents %}
+                    <li>
+                        <strong>Title:</strong> {{ doc.title }} 
+                        <small>| Uploaded by: {{ doc.uploader.username }}</small>
+                        <p>Processed: {% if doc.is_processed %}✅{% else %}❌{% endif %}</p>
+
+                        {% if doc.uploader == user %}
+                            {% if not doc.is_processed %}
+                                <p>
+                                    <a href="{% url 'document_process' doc.pk %}">
+                                        ▶️ Process Document
+                                    </a>
+                                </p>
+                            {% else %}
+                                <p>Output Snippet: {{ doc.processing_output|truncatechars:50 }}</p>
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
-                    
-                </li>
-            {% endfor %}
-        </ul>
+                        
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No documents found matching your criteria, or no documents have been uploaded yet.</p>
+        {% endif %}
+        
     {% else %}
-        <p>No documents found matching your criteria, or no documents have been uploaded yet.</p>
+        <p>You do not have permission to view this content.</p>
     {% endif %}
-    
-{% else %}
-    <p>You do not have permission to view this content.</p>
-{% endif %}
+
+{% endblock content %}

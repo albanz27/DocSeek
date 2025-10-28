@@ -1,11 +1,13 @@
-<h1>Upload New Document</h1>
+{% extends 'base.html' %} 
 
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %} 
-    
-    {{ form.as_p }}  
-    
-    <button type="submit">Upload & Process</button>
-</form>
+{% block content %}
+    <h1>Upload New Document</h1>
 
-<p><a href="{% url 'home' %}">Go back home</a></p>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %} 
+        
+        {{ form.as_p }}  
+        
+        <button type="submit">Upload & Process</button>
+    </form>
+{% endblock content %}

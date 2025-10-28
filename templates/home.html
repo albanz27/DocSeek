@@ -1,13 +1,22 @@
-<h1>Welcome to DocSeek!</h1>
+{% extends 'base.html' %} 
 
-{% if user.is_authenticated %}
-    <p>Hello, {{ user.username }}. You are logged in.</p>
-    <p>Your roles:
-        Uploader: {{ user.profile.is_uploader }}
-        Searcher: {{ user.profile.is_searcher }}
-    </p>
-    <p><a href="{% url 'logout' %}">Log Out</a></p>
-{% else %}
-    <p>You are not logged in.</p>
-    <p>Please <a href="{% url 'login' %}">Log In</a> or <a href="{% url 'register' %}">Sign Up</a>.</p>
-{% endif %}
+{% block content %}
+    
+    {% if user.is_authenticated %}
+        <h2>Welcome Back!</h2>
+        <p>Your Current Roles:</p>
+        <ul>
+            <li><strong>Uploader:</strong> {% if user.profile.is_uploader %}✅ Enabled{% else %}❌ Disabled{% endif %}</li>
+            <li><strong>Searcher:</strong> {% if user.profile.is_searcher %}✅ Enabled{% else %}❌ Disabled{% endif %}</li>
+        </ul>
+
+        {% if not user.profile.is_uploader and not user.profile.is_searcher %}
+            <p>You currently do not have any roles assigned. Please contact the administrator.</p>
+        {% endif %}
+        
+    {% else %}
+        <h2>Welcome to DocSeek!</h2>
+        <p>Please log in or register to access document management features.</p>
+    {% endif %}
+
+{% endblock content %}
