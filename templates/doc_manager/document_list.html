@@ -8,7 +8,7 @@
     
     <hr>
 
-    {% if documents %}
+{% if documents %}
         <h2>Results (Total: {{ documents.count }})</h2>
         <ul>
             {% for doc in documents %}
@@ -16,9 +16,19 @@
                     <strong>Title:</strong> {{ doc.title }} 
                     <small>| Uploaded by: {{ doc.uploader.username }}</small>
                     <p>Processed: {% if doc.is_processed %}✅{% else %}❌{% endif %}</p>
-                    {% if doc.is_processed %}
-                        <p>Output Snippet: {{ doc.processing_output|truncatechars:50 }}</p>
+
+                    {% if doc.uploader == user %}
+                        {% if not doc.is_processed %}
+                            <p>
+                                <a href="{% url 'document_process' doc.pk %}">
+                                    ▶️ Process Document
+                                </a>
+                            </p>
+                        {% else %}
+                            <p>Output Snippet: {{ doc.processing_output|truncatechars:50 }}</p>
+                        {% endif %}
                     {% endif %}
+                    
                 </li>
             {% endfor %}
         </ul>

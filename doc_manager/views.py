@@ -1,6 +1,9 @@
-from django.views.generic.edit import CreateView
+from django.http import Http404
+from django.views.generic.edit import CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.views.generic import ListView
+from django.shortcuts import get_object_or_404
+
 from .models import Document
 from .mixins import SearcherRequiredMixin, UploaderRequiredMixin 
 
@@ -46,3 +49,31 @@ class DocumentListView(SearcherRequiredMixin, ListView):
         
         # 3. Restituisci il set di risultati (filtrato o completo)
         return queryset
+    
+class DocumentProcessView(UpdateView):
+    model = Document 
+    fields = ['is_processed', 'processing_output'] 
+    template_name = 'doc_manager/document_process_form.html'
+    success_url = reverse_lazy('document_list') 
+    
+    # Questo metodo garantisce che solo il proprietario del documento possa vederlo
+    def get_object(self, queryset=None):
+        doc = super().get_object(queryset)
+        
+        # Aggiungiamo un controllo per l'autenticazione E la proprietà
+        if not self.request.user.is_authenticated or doc.uploader != self.request.user:
+            # Se l'utente non è loggato O non è il proprietario, restituiamo un 404
+            # Una soluzione più pulita userebbe un Mixin, ma questa è veloce
+            # per un controllo sulla proprietà dell'oggetto.
+            raise Http404("You are not authorized to process this document.")
+            
+        return doc
+
+    def form_valid(self, form):
+        # QUI si simula la logica di processamento (es. estrazione testo con Tesseract/PDFMiner)
+        
+        # Simulazione: se il flag è impostato a True, aggiungiamo un risultato
+        if form.cleaned_data.get('is_processed') == True and not form.instance.processing_output:
+            form.instance.processing_output = f"Document '{form.instance.title}' successfully processed by system."
+
+        return super().form_valid(form)
