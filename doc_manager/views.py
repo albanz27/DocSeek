@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 
 from .models import Document
 from .mixins import SearcherRequiredMixin, UploaderRequiredMixin 
+from .tasks import index_document_rag
 
 
 class DocumentCreateView(UploaderRequiredMixin, CreateView):
@@ -70,10 +71,19 @@ class DocumentProcessView(UpdateView):
         return doc
 
     def form_valid(self, form):
-        # QUI si simula la logica di processamento (es. estrazione testo con Tesseract/PDFMiner)
+        # Salviamo l'istanza del documento senza commettere sul DB per ora
+        doc_instance = form.save(commit=False)
         
-        # Simulazione: se il flag è impostato a True, aggiungiamo un risultato
-        if form.cleaned_data.get('is_processed') == True and not form.instance.processing_output:
-            form.instance.processing_output = f"Document '{form.instance.title}' successfully processed by system."
-
+        # Verifichiamo se l'utente ha spuntato "is_processed" 
+        # e se il documento non era ancora stato processato (per evitare duplicati)
+        if form.cleaned_data.get('is_processed') and not Document.objects.get(pk=doc_instance.pk).is_processed:
+            
+            # 1. Chiamata al task Celery: il processamento avviene in background
+            index_document_rag.delay(doc_instance.pk) # <-- CHIAMATA ASINCRONA
+            
+            # 2. Aggiorniamo subito lo stato e l'output per feedback immediato
+            doc_instance.is_processed = False # Resettiamo temporaneamente finché Celery non finisce
+            doc_instance.processing_output = "Indexing started in background. Please check the list later."
+            
+        # Salviamo l'istanza (con lo stato di 'Indexing started...')
         return super().form_valid(form)
