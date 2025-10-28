@@ -17,3 +17,14 @@ class UploaderRequiredMixin(UserPassesTestMixin):
         # Se il test fallisce (utente non loggato o non uploader), 
         # reindirizziamo alla home.
         return redirect('home')
+    
+class SearcherRequiredMixin(UserPassesTestMixin):
+    """
+    Mixin che verifica se l'utente è autenticato e ha il ruolo 'is_searcher'.
+    """
+    def test_func(self):
+        user = self.request.user
+        return user.is_authenticated and user.profile.is_searcher
+    
+    def handle_no_permission(self):
+        return redirect('home')
