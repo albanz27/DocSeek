@@ -1,23 +1,48 @@
-def run_queries(collection, queries, n_results=2):
+def run_queries(collection, queries, n_results=3):
     """
-    Esegue le query sulla collection ChromaDB e stampa in modo leggibile i risultati.
-    Mostra: distanza semantica, pagina, tipo e contenuto di ogni chunk.
+    Esegue le query sulla collection ChromaDB e restituisce i risultati 
+    in una lista strutturata per l'uso nel template Django.
     """
-    print(f"\nEseguo {len(queries)} query...")
+    if not queries:
+        return []
+
+    print(f"\nEseguo {len(queries)} query su ChromaDB...")
+    print(f"DEBUG: Chunk totali nella collezione ChromaDB: {collection.count()}")
     results = collection.query(query_texts=queries, n_results=n_results)
 
+    all_formatted_results = []
+    
     for q_idx, query in enumerate(queries):
-        print(f"\n{'='*50}")
-        print(f"RISULTATI PER: '{query}'")
-        print(f"{'='*50}")
-
         docs = results['documents'][q_idx]
         metas = results['metadatas'][q_idx]
         dists = results['distances'][q_idx]
 
+        print(f"DEBUG: Risultati trovati per la query '{query}': {len(docs)}")
+
+        query_results = {
+            'query': query,
+            'chunks': []
+        }
+
         for i, (doc, meta, dist) in enumerate(zip(docs, metas, dists)):
-            print(f"\n--- Risultato {i+1} (dist={dist:.4f}) ---")
-            print(f"PDF: {meta.get('source_pdf', 'N/A')} | Pagina: {meta.get('page', 'N/A')} | Tipo: {meta.get('type', 'N/A')}")
-            print("Contenuto:")
-            for line in doc.strip().split('\n'):
-                print(f"  {line}")
+            # Usiamo 'source_title' e 'document_id' che abbiamo aggiunto nel tasks.py
+            document_title = meta.get('source_title', meta.get('source_pdf', 'N/A'))
+            document_id = meta.get('document_id', None)
+            
+            query_results['chunks'].append({
+                'distance': dist,
+                'document_title': document_title,
+                'document_id': document_id,
+                'page': meta.get('page', 'N/A'),
+                'type': meta.get('type', 'N/A'),
+                'content': doc.strip()
+            })
+        
+        all_formatted_results.append(query_results)
+
+    # Restituisce l'oggetto completo
+    print(f"Query eseguite. Risultati formattati pronti per il template.")
+    print(f"Numero totale di query elaborate: {len(all_formatted_results)}")
+
+    print(f"DEBUG: Contenuto finale restituito a Django: {all_formatted_results}")
+    return all_formatted_results

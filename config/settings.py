@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'doc_manager',
+    'django_celery_results',
 ]
 
 MIDDLEWARE = [
@@ -134,10 +135,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Impostazioni che chiude la sessione alla chiusura del browser
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-# CELERY CONFIGURATION
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0' # URL di connessione a Redis
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0' # Dove salvare i risultati dei task
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'Europe/Rome' # Usa il tuo fuso orario, che è già stato impostato in Django
+# Usiamo un broker che non richieda l'installazione di software esterni:
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0' # Deve puntare al Redis di Docker
+CELERY_RESULT_BACKEND = 'django-db'

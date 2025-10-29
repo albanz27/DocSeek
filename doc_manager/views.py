@@ -2,12 +2,15 @@ from django.http import Http404
 from django.views.generic.edit import CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.views.generic import ListView
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 
 from .models import Document
 from .mixins import SearcherRequiredMixin, UploaderRequiredMixin 
 from .tasks import index_document_rag
+from .rag_pipeline.embedding import init_chromadb
+from .rag_pipeline.search import run_queries
 
+COLLECTION_NAME = "docseek_collection" # Deve corrispondere al nome nel task.py
 
 class DocumentCreateView(UploaderRequiredMixin, CreateView):
     # Dobbiamo importare 'Document' come modello
@@ -25,31 +28,43 @@ class DocumentCreateView(UploaderRequiredMixin, CreateView):
     def form_valid(self, form):
         # PRIMA di salvare, aggiungiamo l'utente loggato come 'uploader'
         form.instance.uploader = self.request.user 
-        return super().form_valid(form)
-    
+        self.object = form.save()
+        return redirect(reverse_lazy('document_process', kwargs={'pk': self.object.pk}))    
+
 class DocumentListView(SearcherRequiredMixin, ListView):
-    # Dobbiamo importare 'Document' come modello
     model = Document
-    
-    # Il template che useremo per visualizzare la lista
     template_name = 'doc_manager/document_list.html'
-    
-    # Il nome della variabile nel contesto del template
-    context_object_name = 'documents' 
-    
+    context_object_name = 'documents'
+
     def get_queryset(self):
-        # 1. Recupera la query di base (tutti i documenti, ordinati)
-        queryset = super().get_queryset()
+        # Per il listato, i Searcher vedono solo i documenti processati.
+        if self.request.user.profile.is_searcher:
+            # Se è un Searcher, vediamo solo i processati (per la ricerca RAG)
+            return Document.objects.filter(is_processed=True).order_by('-uploaded_at') 
         
-        # 2. Implementazione della logica di Ricerca
-        search_query = self.request.GET.get('q') # Recupera il parametro di ricerca 'q' dall'URL
-        if search_query:
-            # Filtra i documenti dove il titolo contiene la query
-            # (Usiamo __icontains per una ricerca case-insensitive)
-            queryset = queryset.filter(title__icontains=search_query) 
+        # Gli Uploader vedono tutti i loro documenti (per processarli)
+        # Questa linea si esegue solo se NON sono Searcher. E se sono Superutente?
+        return Document.objects.filter(uploader=self.request.user).order_by('-uploaded_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        search_query = self.request.GET.get('q', '').strip()
+        context['rag_results'] = None
+
+        if self.request.user.profile.is_searcher and search_query:
+            try:
+                collection = init_chromadb(COLLECTION_NAME)
+                # Esegui la query RAG, essa ritorna una lista di risultati
+                rag_results = run_queries(collection, [search_query], n_results=3) 
+                
+                # Passa i risultati RAG al template
+                context['rag_results'] = rag_results[0]['chunks'] # Solo i chunk del primo risultato
+                
+            except Exception as e:
+                context['rag_error'] = f"Error during RAG search: {e}"
         
-        # 3. Restituisci il set di risultati (filtrato o completo)
-        return queryset
+        return context
+    
     
 class DocumentProcessView(UpdateView):
     model = Document 
@@ -69,6 +84,7 @@ class DocumentProcessView(UpdateView):
             raise Http404("You are not authorized to process this document.")
             
         return doc
+    
 
     def form_valid(self, form):
         # Salviamo l'istanza del documento senza commettere sul DB per ora
