@@ -1,13 +1,50 @@
 {% extends 'base.html' %} 
 
 {% block content %}
-    <h1>Upload New Document</h1>
 
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %} 
-        
-        {{ form.as_p }}  
-        
-        <button type="submit">Upload Document</button>
-    </form>
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg p-4 mt-5">
+            <h2 class="card-title text-center mb-4 text-primary">Upload New Document</h2>
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %} 
+
+                <!-- MESSAGGIO GUIDA -->
+                <div class="alert alert-info small" role="alert">
+                    <i class="fas fa-file-pdf"></i> **Note:** Only PDF files are supported for RAG processing.
+                </div>
+                
+                <!-- Iterazione sui campi del form -->
+                {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        
+                        <!-- Applica la classe form-control per gli input di testo -->
+                        {% if field.label == 'Title' %}
+                            <input type="text" name="{{ field.name }}" id="{{ field.id_for_label }}" class="form-control" placeholder="Enter a descriptive title">
+                        {% else %}
+                            <!-- Input File standard (non supporta form-control nel modo classico) -->
+                            {{ field }} 
+                        {% endif %}
+
+                        {% for error in field.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                
+                <!-- Pulsante di Submit -->
+                <button type="submit" class="btn btn-success w-100 mt-4">
+                    <i class="fas fa-upload"></i> Upload Document
+                </button>
+            </form>
+            
+            <hr class="mt-4 mb-3">
+            <div class="text-center">
+                <a href="{% url 'uploader_dashboard' %}" class="small">Go back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock content %}
