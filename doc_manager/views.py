@@ -3,6 +3,7 @@ from django.views.generic.edit import CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
 
 from .models import Document
 from .mixins import SearcherRequiredMixin, UploaderRequiredMixin 
@@ -21,6 +22,7 @@ class DocumentCreateView(UploaderRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.uploader = self.request.user 
         self.object = form.save()
+        messages.success(self.request, f"Document '{self.object.title}' uploaded successfully. Ready for processing.")
         return redirect(reverse_lazy('document_process', kwargs={'pk': self.object.pk}))    
 
 class DocumentListView(SearcherRequiredMixin, ListView):
@@ -76,5 +78,10 @@ class DocumentProcessView(UpdateView):
             
             doc_instance.is_processed = False 
             doc_instance.processing_output = "Indexing started in background. Please check the list later."
+
+            messages.info(self.request, f"Processing of '{doc_instance.title}' started! This may take a minute. Check 'Search & Results' later.")
+        
+        else:
+            messages.success(self.request, f"Document '{doc_instance.title}' details updated.")
             
         return super().form_valid(form)
