@@ -3,20 +3,80 @@
 {% block content %}
     
     {% if user.is_authenticated %}
-        <h2>Welcome Back!</h2>
-        <p>Your Current Roles:</p>
-        <ul>
-            <li><strong>Uploader:</strong> {% if user.profile.is_uploader %}✅ Enabled{% else %}❌ Disabled{% endif %}</li>
-            <li><strong>Searcher:</strong> {% if user.profile.is_searcher %}✅ Enabled{% else %}❌ Disabled{% endif %}</li>
-        </ul>
-
-        {% if not user.profile.is_uploader and not user.profile.is_searcher %}
-            <p>You currently do not have any roles assigned. Please contact the administrator.</p>
-        {% endif %}
         
-    {% else %}
-        <h2>Welcome to DocSeek!</h2>
-        <p>Please log in or register to access document management features.</p>
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="display-5 text-primary mb-3">Welcome to DocSeek, {{ user.username }}!</h2>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-5 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-primary text-white">
+                        <i class="fas fa-user-tag"></i> Your Active Roles
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text fw-bold">
+                            Uploader (Can upload and process):
+                            {% if user.profile.is_uploader %}
+                                <span class="badge bg-success ms-2">Active ✅</span>
+                            {% else %}
+                                <span class="badge bg-secondary ms-2">Inactive ❌</span>
+                            {% endif %}
+                        </p>
+                        <p class="card-text fw-bold">
+                            Searcher (Can search and view results):
+                            {% if user.profile.is_searcher %}
+                                <span class="badge bg-success ms-2">Active ✅</span>
+                            {% else %}
+                                <span class="badge bg-secondary ms-2">Inactive ❌</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-7 mb-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-dark text-white">
+                        Quick Actions
+                    </div>
+                    <div class="card-body d-grid gap-3">
+                        
+                        {% if user.profile.is_uploader %}
+                            <a href="{% url 'uploader_dashboard' %}" class="btn btn-lg btn-success">
+                                ⬆️ Go to Uploader Dashboard
+                            </a>
+                            <p class="text-muted small">Manage uploads and process pending documents.</p>
+                        {% endif %}
+                        
+                        {% if user.profile.is_searcher %}
+                            <a href="{% url 'document_list' %}" class="btn btn-lg btn-info text-white">
+                                🔎 Start Semantic Search
+                            </a>
+                            <p class="text-muted small">Query the indexed documents using natural language questions.</p>
+                        {% endif %}
+
+                        {% if not user.profile.is_uploader and not user.profile.is_searcher %}
+                            <div class="alert alert-warning" role="alert">
+                                You currently have no active roles. Please contact the administrator.
+                            </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+        </div> 
+        {% else %}
+        <div class="jumbotron text-center bg-light p-5 rounded">
+            <h1 class="display-4">Welcome to DocSeek Manager</h1>
+            <p class="lead">Your platform for secure document management and advanced semantic search (RAG).</p>
+            <hr class="my-4">
+            <p>Please log in or register to access the full functionality.</p>
+            <a class="btn btn-primary btn-lg" href="{% url 'login' %}" role="button">Log In</a>
+            <a class="btn btn-secondary btn-lg" href="{% url 'register' %}" role="button">Sign Up</a>
+        </div>
     {% endif %}
 
 {% endblock content %}

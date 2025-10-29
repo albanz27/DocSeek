@@ -1,0 +1,57 @@
+{% extends 'base.html' %} 
+
+{% block content %}
+<h1 class="display-6 text-primary mb-4">Uploader Dashboard</h1>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card bg-info text-white shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Processed Documents</h5>
+                <p class="card-text display-4">{{ processed_count }}</p>
+                <small>Ready for Semantic Search</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-dark shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Pending Processing</h5>
+                <p class="card-text display-4">{{ pending_documents.count }}</p>
+                <small>Requires your action to be indexed.</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Documents Awaiting Processing</h2>
+    
+    <!-- PULSANTE AGGIUNTO QUI -->
+    <a href="{% url 'document_upload' %}" class="btn btn-primary btn-lg">
+        + Upload New Document
+    </a>
+</div>
+
+{% if pending_documents %}
+    <ul class="list-group">
+        {% for doc in pending_documents %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ doc.title }} (Uploaded {{ doc.uploaded_at|date:"M d" }})
+                <a href="{% url 'document_process' doc.pk %}" class="btn btn-sm btn-success">
+                    ▶️ Process Now
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <div class="alert alert-success">
+        All your documents are fully processed and ready for search! 
+        <!-- Aggiungiamo un link rapido anche qui -->
+        <a href="{% url 'document_upload' %}" class="alert-link">Click here to upload a new one.</a>
+    </div>
+{% endif %}
+
+{% endblock content %}
