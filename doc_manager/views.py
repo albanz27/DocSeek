@@ -113,6 +113,10 @@ class UploaderDashboardView(UploaderRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['total_uploaded_count'] = Document.objects.filter(
+            uploader=self.request.user
+        ).count()
+        
         context['processed_count'] = Document.objects.filter(
             uploader=self.request.user,
             is_processed=True

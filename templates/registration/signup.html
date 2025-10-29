@@ -1,9 +1,55 @@
-<h2>Register Your DocSeek Account</h2>
+{% extends 'base.html' %} 
 
-<form method="POST">
-    {% csrf_token %} 
-    {{ form.as_p }}  
-    <button type="submit">Sign Up</button>
-</form>
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-lg p-4 mt-5">
+            <h2 class="card-title text-center mb-4">Create DocSeek Account</h2>
+            
+            <form method="POST">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
-<p>Already have an account? <a href="{% url 'login' %}">Log In Here</a></p>
+                {% for field in form %}
+                    {% if field.label == 'Can upload & process documents (uploader role)' or field.label == 'Can search & view documents (searcher role)' %}
+                        <div class="form-check mb-3">
+                            {{ field }}
+                            <label class="form-check-label" for="{{ field.id_for_label }}">
+                                {{ field.label }}
+                            </label>
+                            {% for error in field.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="mb-3">
+                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                
+                <button type="submit" class="btn btn-primary w-100 mt-3">Sign Up</button>
+            </form>
+
+            <hr class="mt-4 mb-3">
+            <div class="text-center">
+                <p class="small mb-1">Already have an account? <a href="{% url 'login' %}">Log In</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

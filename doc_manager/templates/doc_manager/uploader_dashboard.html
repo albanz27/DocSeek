@@ -47,11 +47,19 @@
         {% endfor %}
     </ul>
 {% else %}
-    <div class="alert alert-success">
-        All your documents are fully processed and ready for search! 
-        <!-- Aggiungiamo un link rapido anche qui -->
-        <a href="{% url 'document_upload' %}" class="alert-link">Click here to upload a new one.</a>
-    </div>
+    {% if total_uploaded_count > 0 %}
+        <!-- SCENARIO 1: Ha documenti, e sono tutti processati -->
+        <div class="alert alert-success shadow-sm">
+            All your documents ({{ total_uploaded_count }}) are fully processed and ready for search! 
+            <a href="{% url 'document_upload' %}" class="alert-link">Click here to upload a new one.</a>
+        </div>
+    {% else %}
+        <!-- SCENARIO 2: Non ha mai caricato nulla -->
+        <div class="alert alert-warning shadow-sm">
+            You haven't uploaded any documents yet. 
+            <a href="{% url 'document_upload' %}" class="alert-link">Start by uploading your first PDF!</a>
+        </div>
+    {% endif %}
 {% endif %}
 
 {% endblock content %}
