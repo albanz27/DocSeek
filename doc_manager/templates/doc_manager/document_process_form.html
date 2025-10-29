@@ -9,7 +9,6 @@
             <div class="alert alert-secondary small mb-4">
                 File uploaded at: **{{ document.uploaded_at|date:"Y-m-d H:i" }}** | 
                 Uploader: **{{ document.uploader.username }}**
-                <!-- Link di download come miglioramento UX -->
                 <a href="{{ document.file.url }}" class="alert-link ms-3">
                     <i class="fas fa-download"></i> Download Original File
                 </a>
@@ -18,14 +17,11 @@
             <form method="POST">
                 {% csrf_token %} 
                 
-                <!-- Messaggio Guida -->
                 <p class="text-muted small">
                     Check the box below to start the background RAG processing (chunking and embedding). This action cannot be reversed.
                 </p>
 
-                <!-- Campo Checkbox: Is processed -->
                 <div class="form-check mb-4 border p-3 rounded">
-                    <!-- {{ form.is_processed }} si riferisce solo all'input checkbox -->
                     {{ form.is_processed }} 
                     <label class="form-check-label fw-bold text-success" for="{{ form.is_processed.id_for_label }}">
                         Start RAG Processing (Mark as Processed)
@@ -35,10 +31,8 @@
                     </div>
                 </div>
 
-                <!-- Campo Textarea: Processing Output -->
                 <div class="mb-4">
                     <label for="{{ form.processing_output.id_for_label }}" class="form-label fw-bold">Processing Output / Notes:</label>
-                    <!-- {{ form.processing_output }} si riferisce alla textarea -->
                     {{ form.processing_output }} 
                     {% for error in form.processing_output.errors %}
                         <div class="invalid-feedback d-block">{{ error }}</div>
@@ -58,14 +52,4 @@
     </div>
 </div>
 
-<style>
-    /* Stile per forzare la Textarea ad avere il look Bootstrap */
-    #id_processing_output {
-        height: 150px;
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ced4da;
-        border-radius: 0.25rem;
-    }
-</style>
 {% endblock content %}

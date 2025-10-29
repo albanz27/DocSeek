@@ -1,0 +1,24 @@
+.form-control[type="file"] {
+    border: 1px dashed #ccc;
+    padding: 10px;
+    background-color: #f7f7f7;
+}
+
+.card-title {
+    font-weight: 600;
+}
+
+#id_processing_output {
+    height: 150px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+}
+
+h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: brown;
+}

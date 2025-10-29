@@ -1,4 +1,9 @@
 {% extends 'base.html' %} 
+{% load static %}
+
+{% block document_form_css %}
+<link rel="stylesheet" href="{% static 'doc_manager/css/document_form.css' %}">
+{% endblock document_form_css %}
 
 {% block content %}
 

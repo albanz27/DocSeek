@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -119,6 +118,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# Impostazioni Statici Globali
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -135,6 +139,8 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Impostazioni che chiude la sessione alla chiusura del browser
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-# Usiamo un broker che non richieda l'installazione di software esterni:
+# Celery Configuration Options
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0' # Deve puntare al Redis di Docker
 CELERY_RESULT_BACKEND = 'django-db'
+
+
