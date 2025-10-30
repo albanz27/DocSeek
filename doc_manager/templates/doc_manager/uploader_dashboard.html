@@ -29,7 +29,6 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Documents Awaiting Processing</h2>
     
-    <!-- PULSANTE AGGIUNTO QUI -->
     <a href="{% url 'document_upload' %}" class="btn btn-primary btn-lg">
         + Upload New Document
     </a>
@@ -48,13 +47,11 @@
     </ul>
 {% else %}
     {% if total_uploaded_count > 0 %}
-        <!-- SCENARIO 1: Ha documenti, e sono tutti processati -->
         <div class="alert alert-success shadow-sm">
             All your documents ({{ total_uploaded_count }}) are fully processed and ready for search! 
             <a href="{% url 'document_upload' %}" class="alert-link">Click here to upload a new one.</a>
         </div>
     {% else %}
-        <!-- SCENARIO 2: Non ha mai caricato nulla -->
         <div class="alert alert-warning shadow-sm">
             You haven't uploaded any documents yet. 
             <a href="{% url 'document_upload' %}" class="alert-link">Start by uploading your first PDF!</a>
