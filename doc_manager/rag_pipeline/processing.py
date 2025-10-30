@@ -4,22 +4,21 @@ from docling.datamodel.pipeline_options import PdfPipelineOptions
 MAX_TEXT_CHUNK_SIZE = 500
 CHUNK_OVERLAP_SIZE = 50 
 
-last_chunk_content = "" # Variabile globale per memorizzare il contenuto dell'ultimo chunk di testo
+LAST_CHUNK_CONTENT = "" 
 
 def flush_text_buffer(buffer, page_num, all_chunks_list):
     """
     Unisce il testo nel buffer e lo aggiunge come un unico chunk.
     Aggiorna la variabile globale 'last_chunk_content' per l'overlap.
     """
-    global last_chunk_content
+    global LAST_CHUNK_CONTENT
     if buffer:
         content = "\n".join(buffer)
         all_chunks_list.append({
             "content": content,
             "metadata": {"page": page_num, "type": "text"}
         })
-        # Memorizza il contenuto dell'ultimo chunk per la sovrapposizione
-        last_chunk_content = content
+        LAST_CHUNK_CONTENT = content
     buffer.clear()
 
 def add_overlap_to_buffer(buffer):
@@ -27,11 +26,9 @@ def add_overlap_to_buffer(buffer):
     Aggiunge una sezione del contenuto dell'ultimo chunk all'inizio del nuovo buffer
     per creare l'overlap contestuale.
     """
-    global last_chunk_content
-    if last_chunk_content:
-        # Prende gli ultimi CHUNK_OVERLAP_SIZE caratteri
-        overlap_text = last_chunk_content[-CHUNK_OVERLAP_SIZE:]
-        # Aggiunge una riga esplicita all'inizio del nuovo chunk
+    global LAST_CHUNK_CONTENT
+    if LAST_CHUNK_CONTENT:
+        overlap_text = LAST_CHUNK_CONTENT[-CHUNK_OVERLAP_SIZE:]
         buffer.append(f"--- CONTINUA DA CONTESTO PRECEDENTE: {overlap_text} ---")
 
 def convert_table_to_markdown(table_data, page_num: int) -> str:
@@ -44,11 +41,8 @@ def convert_table_to_markdown(table_data, page_num: int) -> str:
 
     markdown = f"Tabella a pagina {page_num}:\n"
 
-    # Header della tabella
     markdown += "| " + " | ".join(cell.text for cell in grid[0]) + " |\n"
-    # Separatore Markdown
     markdown += "| " + " | ".join(["---"] * len(grid[0])) + " |\n"
-    # Righe del corpo
     for row in grid[1:]:
         markdown += "| " + " | ".join(cell.text for cell in row) + " |\n"
 
@@ -61,21 +55,18 @@ def create_chunks(doc):
     - tabelle 
     - immagini 
     """
-    global last_chunk_content
+    global LAST_CHUNK_CONTENT
     all_chunks, text_buffer, current_page = [], [], 1
-    last_chunk_content = "" 
+    LAST_CHUNK_CONTENT = "" 
 
-    # Costruzione di una mappa dei riferimenti per accedere rapidamente agli oggetti
     item_map = {item.self_ref: item for item in (doc.texts + doc.tables + doc.pictures)}
 
-    # Iterazione sull'ordine logico del documento
     for ref_item in doc.body.children:
         cref = ref_item.cref
         if cref not in item_map:
-            continue  # ignora riferimenti non validi
+            continue  
         item = item_map[cref]
 
-        # Aggiorna il numero di pagina corrente
         if item.prov:
             current_page = item.prov[0].page_no
 
@@ -84,27 +75,21 @@ def create_chunks(doc):
         if item_type in ['TEXT', 'SECTION_HEADER', 'LIST']:
             new_text = item.text
             
-            # Calcola la lunghezza approssimativa del buffer SE aggiungiamo il nuovo testo
-            # Consideriamo anche l'overlap se presente
             current_buffer_length = len("\n".join(text_buffer)) if text_buffer else 0
             new_line_length = len(new_text) + 1
 
             if current_buffer_length + new_line_length > MAX_TEXT_CHUNK_SIZE:
-                # 1. Se sforiamo, finalizza il chunk corrente
                 flush_text_buffer(text_buffer, current_page, all_chunks)
                 
-                # 2. Aggiungi la sovrapposizione al buffer appena svuotato
                 add_overlap_to_buffer(text_buffer)
                 
-                # 3. Inizia il nuovo chunk con il testo corrente
                 text_buffer.append(new_text)
             else:
-                # Altrimenti, aggiungi il nuovo testo al buffer corrente
                 text_buffer.append(new_text)
 
         elif item_type == 'TABLE':
             flush_text_buffer(text_buffer, current_page, all_chunks)
-            last_chunk_content = ""
+            LAST_CHUNK_CONTENT = ""
             table_md = convert_table_to_markdown(item.data, current_page)
             all_chunks.append({
                 "content": table_md,
@@ -113,7 +98,7 @@ def create_chunks(doc):
 
         elif item_type == 'PICTURE':
             flush_text_buffer(text_buffer, current_page, all_chunks)
-            last_chunk_content = ""
+            LAST_CHUNK_CONTENT = ""
             desc = "Immagine rilevata (nessuna didascalia trovata)"
             if item.captions:
                 caption_texts = []
@@ -128,7 +113,6 @@ def create_chunks(doc):
                 "metadata": {"page": current_page, "type": "image"}
             })
 
-    # Svuotamento finale del buffer di testo
     flush_text_buffer(text_buffer, current_page, all_chunks)
     return all_chunks
 

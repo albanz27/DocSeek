@@ -25,7 +25,6 @@ def run_queries(collection, queries, n_results=3):
         }
 
         for i, (doc, meta, dist) in enumerate(zip(docs, metas, dists)):
-            # Usiamo 'source_title' e 'document_id' che abbiamo aggiunto nel tasks.py
             document_title = meta.get('source_title', meta.get('source_pdf', 'N/A'))
             document_id = meta.get('document_id', None)
             
@@ -40,9 +39,7 @@ def run_queries(collection, queries, n_results=3):
         
         all_formatted_results.append(query_results)
 
-    # Restituisce l'oggetto completo
     print(f"Query eseguite. Risultati formattati pronti per il template.")
     print(f"Numero totale di query elaborate: {len(all_formatted_results)}")
 
-    print(f"DEBUG: Contenuto finale restituito a Django: {all_formatted_results}")
     return all_formatted_results
