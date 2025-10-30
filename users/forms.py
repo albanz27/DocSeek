@@ -13,7 +13,6 @@ class UserRegistrationForm(UserCreationForm):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Aggiunge la classe form-control a tutti i campi
         for field_name, field in self.fields.items():
             if field_name not in ['is_uploader', 'is_searcher']:
                 field.widget.attrs['class'] = 'form-control'
