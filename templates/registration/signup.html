@@ -1,10 +1,15 @@
 {% extends 'base.html' %} 
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/registration/signup.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
         <div class="card shadow-lg p-4 mt-5">
-            <h2 class="card-title text-center mb-4">Create DocSeek Account</h2>
+            <h2 class="card-title text-center mb-4 text-primary">Create DocSeek Account</h2>
             
             <form method="POST">
                 {% csrf_token %}
@@ -42,7 +47,9 @@
                     {% endif %}
                 {% endfor %}
                 
-                <button type="submit" class="btn btn-primary w-100 mt-3">Sign Up</button>
+                <button type="submit" class="btn btn-primary w-100 mt-3">
+                    <i class="fas fa-user-plus me-1"></i> Sign Up
+                </button>
             </form>
 
             <hr class="mt-4 mb-3">
