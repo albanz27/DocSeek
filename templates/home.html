@@ -12,65 +12,95 @@
 
         <div class="row">
             <div class="col-md-5 mb-4">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-primary text-white">
-                        <i class="fas fa-user-tag"></i> Your Active Roles
+                <div class="row h-100 g-3">
+                    
+                    <div class="col-12">
+                        <div class="card shadow-sm h-100 border-{{ user.profile.is_uploader|yesno:'success,secondary' }}">
+                            <div class="card-body d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-subtitle text-muted mb-1">Uploader Role</h6>
+                                    <h4 class="card-title fw-bold text-{{ user.profile.is_uploader|yesno:'success,secondary' }}">
+                                        {% if user.profile.is_uploader %}
+                                            Active <i class="fas fa-check-circle"></i>
+                                        {% else %}
+                                            Inactive <i class="fas fa-times-circle"></i>
+                                        {% endif %}
+                                    </h4>
+                                </div>
+                                <i class="fas fa-upload fa-2x text-{{ user.profile.is_uploader|yesno:'success,secondary' }}"></i>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0">
+                                <p class="card-text small text-muted">Can upload documents and manage processing tasks.</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <p class="card-text fw-bold">
-                            Uploader (Can upload and process):
-                            {% if user.profile.is_uploader %}
-                                <span class="badge bg-success ms-2">Active ✅</span>
-                            {% else %}
-                                <span class="badge bg-secondary ms-2">Inactive ❌</span>
-                            {% endif %}
-                        </p>
-                        <p class="card-text fw-bold">
-                            Searcher (Can search and view results):
-                            {% if user.profile.is_searcher %}
-                                <span class="badge bg-success ms-2">Active ✅</span>
-                            {% else %}
-                                <span class="badge bg-secondary ms-2">Inactive ❌</span>
-                            {% endif %}
-                        </p>
+                    
+                    <div class="col-12">
+                        <div class="card shadow-sm h-100 border-{{ user.profile.is_searcher|yesno:'info,secondary' }}">
+                            <div class="card-body d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-subtitle text-muted mb-1">Searcher Role</h6>
+                                    <h4 class="card-title fw-bold text-{{ user.profile.is_searcher|yesno:'info,secondary' }}">
+                                        {% if user.profile.is_searcher %}
+                                            Active <i class="fas fa-check-circle"></i>
+                                        {% else %}
+                                            Inactive <i class="fas fa-times-circle"></i>
+                                        {% endif %}
+                                    </h4>
+                                </div>
+                                <i class="fas fa-search fa-2x text-{{ user.profile.is_searcher|yesno:'info,secondary' }}"></i>
+                            </div>
+                            <div class="card-footer bg-transparent border-top-0">
+                                <p class="card-text small text-muted">Can query the RAG engine and view results.</p>
+                            </div>
+                        </div>
                     </div>
+
                 </div>
             </div>
 
             <div class="col-md-7 mb-4">
                 <div class="card shadow-sm h-100">
                     <div class="card-header bg-dark text-white">
-                        Quick Actions
+                        <i class="fas fa-chart-line me-1"></i> System Overview
                     </div>
-                    <div class="card-body d-grid gap-3">
+                    <div class="card-body">
                         
+                        <p class="card-text lead">
+                            Thank you for using DocSeek Manager. Your available tools are active in the navigation bar above.
+                        </p>
+                        
+                        <hr>
+
                         {% if user.profile.is_uploader %}
-                            <a href="{% url 'uploader_dashboard' %}" class="btn btn-lg btn-success">
-                                ⬆️ Go to Uploader Dashboard
+                            <h5 class="text-success mb-3"><i class="fas fa-sync fa-spin me-2"></i> Indexing Status</h5>
+                            <p class="small text-muted">
+                                Your indexing tasks are managed by the Celery queue. Check the Uploader Dashboard for any pending documents that require processing action.
+                            </p>
+                            <a href="{% url 'uploader_dashboard' %}" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-tachometer-alt me-1"></i> Go to Dashboard
                             </a>
-                            <p class="text-muted small">Manage uploads and process pending documents.</p>
+                        {% endif %}
+
+                        {% if user.profile.is_searcher %}
+                            <h5 class="mt-4 text-info mb-3"><i class="fas fa-cogs me-2"></i> Search Engine Status</h5>
+                            <p class="small text-muted">
+                                The Semantic Search engine is fully operational. You can now submit complex natural language queries against your indexed documents.
+                            </p>
+                            <a href="{% url 'document_list' %}" class="btn btn-sm btn-info text-white">
+                                <i class="fas fa-search me-1"></i> Start Query
+                            </a>
                         {% endif %}
                         
-                        {% if user.profile.is_searcher %}
-                            <a href="{% url 'document_list' %}" class="btn btn-lg btn-info text-white">
-                                🔎 Start Semantic Search
-                            </a>
-                            <p class="text-muted small">Query the indexed documents using natural language questions.</p>
-                        {% endif %}
-
-                        {% if not user.profile.is_uploader and not user.profile.is_searcher %}
-                            <div class="alert alert-warning" role="alert">
-                                You currently have no active roles. Please contact the administrator.
-                            </div>
-                        {% endif %}
-
                     </div>
                 </div>
             </div>
+
         </div> 
+        
         {% else %}
         <div class="jumbotron text-center bg-light p-5 rounded">
-            <h1 class="display-4">Welcome to DocSeek Manager</h1>
+            <h1 class="display-4">Welcome to DocSeek</h1>
             <p class="lead">Your platform for secure document management and advanced semantic search (RAG).</p>
             <hr class="my-4">
             <p>Please log in or register to access the full functionality.</p>
