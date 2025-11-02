@@ -1,0 +1,147 @@
+.semantic-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px 15px;
+}
+
+.page-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #0d6efd;
+    margin-bottom: 25px;
+}
+
+.search-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.search-input {
+    flex: 1;
+    font-size: 1.1rem;
+    border-radius: 10px;
+    padding: 10px 14px;
+    border: 1px solid #ced4da;
+    transition: all 0.2s ease-in-out;
+}
+
+.search-input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    outline: none;
+}
+
+.search-btn {
+    font-size: 1rem;
+    border-radius: 10px;
+    padding: 10px 20px;
+}
+
+.result-card {
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.result-card:hover {
+    transform: translateY(-3px);
+}
+
+.chunk-box {
+    background-color: #f8f9fa;
+    border-left: 4px solid #0d6efd;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+.divider {
+    margin: 40px 0;
+    opacity: 0.2;
+}
+
+.section-title {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #0d6efd;
+    margin-bottom: 10px;
+}
+
+.doc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.doc-card {
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 15px;
+    background: #ffffff;
+}
+
+.doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.doc-body p {
+    margin-bottom: 10px;
+}
+
+.btn-outline-primary.btn-sm {
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 0.9rem;
+}
+
+.search-form input[type="text"] {
+    border-radius: 12px;
+    border: 1px solid #ced4da;
+    padding: 12px 16px;
+    transition: all 0.3s ease;
+}
+
+.search-form input[type="text"]:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+}
+
+.card {
+    border-radius: 16px;
+}
+
+.card-header {
+    border-top-left-radius: 16px !important;
+    border-top-right-radius: 16px !important;
+}
+
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.btn-primary {
+    border-radius: 10px;
+    font-weight: 500;
+}
+
+.alert {
+    border-radius: 12px;
+}
+
+.bg-light-subtle {
+    background-color: #f8f9fa;
+}
+
+.badge {
+    font-size: 0.8rem;
+}

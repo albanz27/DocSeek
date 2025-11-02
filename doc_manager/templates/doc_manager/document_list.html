@@ -1,25 +1,33 @@
-{% extends 'base.html' %} 
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/doc_manager/document_list.css' %}">
+{% endblock %}
 
 {% block content %}
-    
-    <h1 class="display-6 text-primary mb-4">Semantic Search Engine</h1>
+<div class="semantic-container">
+    <h1 class="page-title">Semantic Search Engine</h1>
 
     {% if user.profile.is_searcher %}
-        <form method="GET" action="{% url 'document_list' %}" class="mb-4">
-            <input type="text" name="q" 
-                   placeholder="Ask a question about the documents..." 
-                   class="form-control form-control-lg d-inline-block w-75 me-2">
-            <button type="submit" class="btn btn-primary btn-lg">Search</button>
+        <!-- Search Form -->
+        <form method="GET" action="{% url 'document_list' %}" class="search-form">
+            <input type="text" name="q" placeholder="Ask a question about the documents..." 
+                   class="form-control search-input">
+            <button type="submit" class="btn btn-primary search-btn">
+                <i class="fas fa-search me-2"></i>Search
+            </button>
         </form>
 
+        <!-- Search Results -->
         {% if rag_results_by_doc %}
-            <h2 class="mt-4">Semantic Search Results (RAG)</h2>
+            <h2 class="section-title mt-4">Semantic Search Results (RAG)</h2>
             <p class="lead text-muted">Showing relevant passages for your query: "<strong>{{ search_query }}</strong>"</p>
             
             {% for doc_title, chunks in rag_results_by_doc.items %}
-                <div class="card shadow-sm mb-4">
+                <div class="card result-card">
                     <div class="card-header bg-primary text-white">
-                        <i class="fas fa-file-alt me-2"></i> Document: {{ doc_title }} 
+                        <i class="fas fa-file-alt me-2"></i> Document: {{ doc_title }}
                     </div>
                     <ul class="list-group list-group-flush">
                         {% for chunk in chunks %}
@@ -30,11 +38,11 @@
                                         Type: <span class="badge bg-light text-secondary me-2">{{ chunk.type }}</span>
                                     </small>
                                     <small class="text-danger" title="Semantic Distance (Closer to 0 is better)">
-                                        Distance: {{ chunk.distance|floatformat:4 }} 
+                                        Distance: {{ chunk.distance|floatformat:4 }}
                                     </small>
                                 </div>
-                                
-                                <div class="p-2 border border-start-0 border-end-0 border-primary-subtle bg-light-subtle rounded">
+
+                                <div class="chunk-box">
                                     {{ chunk.content }}
                                 </div>
                             </li>
@@ -47,45 +55,58 @@
                 Semantic search executed, but no relevant content was found for "<strong>{{ search_query }}</strong>".
             </div>
         {% endif %}
-        
+
         {% if rag_error %}
-        <p style="color: red; border: 1px solid red; padding: 10px;">
-            **RAG Search Error:** {{ rag_error }}
-        </p>
+            <div class="alert alert-danger mt-4">
+                <strong>RAG Search Error:</strong> {{ rag_error }}
+            </div>
         {% endif %}
-        <hr>
 
+        <hr class="divider">
+
+        <!-- Document List -->
         {% if documents %}
-        <h2>Available Documents (Total: {{ documents.count }})</h2>
-        <p class="text-muted small">The list below shows documents processed and available for search.</p>
-            <ul>
+            <h2 class="section-title">Available Documents (Total: {{ documents.count }})</h2>
+            <p class="text-muted small">The list below shows documents processed and available for search.</p>
+
+            <div class="doc-list">
                 {% for doc in documents %}
-                    <li>
-                        <strong>Title:</strong> {{ doc.title }} 
-                        <small>| Uploaded by: {{ doc.uploader.username }}</small>
-                        <p>Processed: {% if doc.is_processed %}✅{% else %}❌{% endif %}</p>
+                    <div class="doc-card shadow-sm">
+                        <div class="doc-header">
+                            <strong>{{ doc.title }}</strong>
+                            <span class="text-muted small">Uploaded by: {{ doc.uploader.username }}</span>
+                        </div>
+                        <div class="doc-body">
+                            <p>Processed:     
+                                {% if doc.is_processed %}
+                                    <i class="fas fa-check-circle text-success me-1" title="Processed"></i>
+                                {% else %}
+                                    <i class="fas fa-times-circle text-danger me-1" title="Not Processed"></i>
+                                 {% endif %}
+                            </p>
 
-                        {% if doc.uploader == user %}
-                            {% if not doc.is_processed %}
-                                <p>
-                                    <a href="{% url 'document_process' doc.pk %}">
-                                        ▶️ Process Document
+                            {% if doc.uploader == user %}
+                                {% if not doc.is_processed %}
+                                    <a href="{% url 'document_process' doc.pk %}" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-play me-1"></i>Process Document
                                     </a>
-                                </p>
-                            {% else %}
-                                <p>Output Snippet: {{ doc.processing_output|truncatechars:50 }}</p>
+                                {% else %}
+                                    <p><strong>Output Snippet:</strong> {{ doc.processing_output|truncatechars:50 }}</p>
+                                {% endif %}
                             {% endif %}
-                        {% endif %}
-                        
-                    </li>
+                        </div>
+                    </div>
                 {% endfor %}
-            </ul>
+            </div>
         {% else %}
-            <p>No documents found matching your criteria, or no documents have been uploaded yet.</p>
+            <div class="alert alert-info mt-3">
+                No documents found matching your criteria, or no documents have been uploaded yet.
+            </div>
         {% endif %}
-        
     {% else %}
-        <p>You do not have permission to view this content.</p>
+        <div class="alert alert-danger mt-4">
+            You do not have permission to view this content.
+        </div>
     {% endif %}
-
+</div>
 {% endblock content %}
