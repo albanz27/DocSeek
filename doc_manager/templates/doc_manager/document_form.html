@@ -1,9 +1,9 @@
 {% extends 'base.html' %} 
 {% load static %}
 
-{% block document_form_css %}
-<link rel="stylesheet" href="{% static 'doc_manager/css/document_form.css' %}">
-{% endblock document_form_css %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/doc_manager/document_form.css' %}">
+{% endblock %}
 
 {% block content %}
 
@@ -16,7 +16,7 @@
                 {% csrf_token %} 
 
                 <div class="alert alert-info small" role="alert">
-                    <i class="fas fa-file-pdf"></i> **Note:** Only PDF files are supported for RAG processing.
+                    <i class="fas fa-file-pdf"></i> <strong>Note:</strong> Only PDF files are supported for RAG processing.
                 </div>
                 
                 {% for field in form %}

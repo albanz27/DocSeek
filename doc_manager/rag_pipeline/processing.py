@@ -3,14 +3,10 @@ from docling.datamodel.pipeline_options import PdfPipelineOptions
 
 MAX_TEXT_CHUNK_SIZE = 500
 CHUNK_OVERLAP_SIZE = 50 
-
 LAST_CHUNK_CONTENT = "" 
 
 def flush_text_buffer(buffer, page_num, all_chunks_list):
-    """
-    Unisce il testo nel buffer e lo aggiunge come un unico chunk.
-    Aggiorna la variabile globale 'last_chunk_content' per l'overlap.
-    """
+    """Unisce il testo nel buffer e lo aggiunge come un unico chunk."""
     global LAST_CHUNK_CONTENT
     if buffer:
         content = "\n".join(buffer)
@@ -29,7 +25,7 @@ def add_overlap_to_buffer(buffer):
     global LAST_CHUNK_CONTENT
     if LAST_CHUNK_CONTENT:
         overlap_text = LAST_CHUNK_CONTENT[-CHUNK_OVERLAP_SIZE:]
-        buffer.append(f"--- CONTINUA DA CONTESTO PRECEDENTE: {overlap_text} ---")
+        buffer.append(overlap_text)
 
 def convert_table_to_markdown(table_data, page_num: int) -> str:
     """
@@ -40,7 +36,6 @@ def convert_table_to_markdown(table_data, page_num: int) -> str:
         return f"Tabella vuota a pagina {page_num}"
 
     markdown = f"Tabella a pagina {page_num}:\n"
-
     markdown += "| " + " | ".join(cell.text for cell in grid[0]) + " |\n"
     markdown += "| " + " | ".join(["---"] * len(grid[0])) + " |\n"
     for row in grid[1:]:
@@ -80,9 +75,8 @@ def create_chunks(doc):
 
             if current_buffer_length + new_line_length > MAX_TEXT_CHUNK_SIZE:
                 flush_text_buffer(text_buffer, current_page, all_chunks)
-                
+
                 add_overlap_to_buffer(text_buffer)
-                
                 text_buffer.append(new_text)
             else:
                 text_buffer.append(new_text)
