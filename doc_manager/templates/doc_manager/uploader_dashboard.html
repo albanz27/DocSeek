@@ -1,62 +1,69 @@
-{% extends 'base.html' %} 
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/uploader_dashboard.css' %}">
+{% endblock extra_css %}
 
 {% block content %}
-<h1 class="display-6 text-primary mb-4">Uploader Dashboard</h1>
+<div class="dashboard-container">
+    <h1 class="display-6 text-primary mb-4 fw-bold">Uploader Dashboard</h1>
 
-<div class="row">
-    <div class="col-md-4">
-        <div class="card bg-info text-white shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Processed Documents</h5>
-                <p class="card-text display-4">{{ processed_count }}</p>
-                <small>Ready for Semantic Search</small>
+    <!-- STAT CARDS -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card bg-white text-center border-start border-4 border-primary shadow-sm">
+                <h5 class="text-muted mb-1">Processed Documents</h5>
+                <p class="display-5 fw-bold text-primary mb-0">{{ processed_count }}</p>
+                <small class="text-secondary">Ready for Semantic Search</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card bg-white text-center border-start border-4 border-warning shadow-sm">
+                <h5 class="text-muted mb-1">Pending Processing</h5>
+                <p class="display-5 fw-bold text-warning mb-0">{{ pending_documents.count }}</p>
+                <small class="text-secondary">Requires indexing</small>
             </div>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card bg-warning text-dark shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Pending Processing</h5>
-                <p class="card-text display-4">{{ pending_documents.count }}</p>
-                <small>Requires your action to be indexed.</small>
-            </div>
-        </div>
+
+    <!-- TITLE + BUTTON -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 fw-semibold mb-0">Documents Awaiting Processing</h2>
+        <a href="{% url 'document_upload' %}" class="btn btn-primary btn-lg rounded-pill shadow-sm">
+            <i class="fas fa-upload me-2"></i> Upload New Document
+        </a>
     </div>
-</div>
 
-<hr>
-
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Documents Awaiting Processing</h2>
-    
-    <a href="{% url 'document_upload' %}" class="btn btn-primary btn-lg">
-        + Upload New Document
-    </a>
-</div>
-
-{% if pending_documents %}
-    <ul class="list-group">
-        {% for doc in pending_documents %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ doc.title }} (Uploaded {{ doc.uploaded_at|date:"M d" }})
-                <a href="{% url 'document_process' doc.pk %}" class="btn btn-sm btn-success">
-                    ▶️ Process Now
-                </a>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    {% if total_uploaded_count > 0 %}
-        <div class="alert alert-success shadow-sm">
-            All your documents ({{ total_uploaded_count }}) are fully processed and ready for search! 
-            <a href="{% url 'document_upload' %}" class="alert-link">Click here to upload a new one.</a>
-        </div>
+    <!-- DOCUMENT LIST -->
+    {% if pending_documents %}
+        <ul class="list-group shadow-sm rounded-3">
+            {% for doc in pending_documents %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ doc.title }}</strong>
+                        <small class="text-muted d-block">Uploaded {{ doc.uploaded_at|date:"M d, Y" }}</small>
+                    </div>
+                    <a href="{% url 'document_process' doc.pk %}" class="btn btn-success btn-sm rounded-pill">
+                        <i class="fas fa-play me-1"></i> Process
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
     {% else %}
-        <div class="alert alert-warning shadow-sm">
-            You haven't uploaded any documents yet. 
-            <a href="{% url 'document_upload' %}" class="alert-link">Start by uploading your first PDF!</a>
-        </div>
+        {% if total_uploaded_count > 0 %}
+            <div class="alert alert-success shadow-sm mt-3" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                All your <strong>{{ total_uploaded_count }}</strong> documents are fully processed and ready for search!  
+                <a href="{% url 'document_upload' %}" class="alert-link">Upload another one.</a>
+            </div>
+        {% else %}
+            <div class="alert alert-warning shadow-sm mt-3" role="alert">
+                <i class="fas fa-folder-open me-2"></i>
+                You haven’t uploaded any documents yet.  
+                <a href="{% url 'document_upload' %}" class="alert-link">Start by uploading your first PDF!</a>
+            </div>
+        {% endif %}
     {% endif %}
-{% endif %}
-
+</div>
 {% endblock content %}

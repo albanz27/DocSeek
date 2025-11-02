@@ -1,0 +1,66 @@
+/* --------------------  DASHBOARD LAYOUT  -------------------- */
+.dashboard-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 1.5rem;
+}
+
+/* --------------------  STAT CARDS  -------------------- */
+.stat-card {
+    border-radius: 1rem;
+    padding: 1.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* --------------------  DOCUMENT LIST  -------------------- */
+.list-group-item {
+    border: none;
+    border-bottom: 1px solid #e9ecef;
+    padding: 1rem 1.25rem;
+    transition: background-color 0.2s ease;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* --------------------  BUTTONS  -------------------- */
+.btn-primary {
+    background-color: #4a54e1;
+    border-color: #4a54e1;
+}
+.btn-primary:hover {
+    background-color: #3d47c5;
+    border-color: #3d47c5;
+}
+
+.btn-success {
+    background-color: #198754;
+    border: none;
+}
+.btn-success:hover {
+    background-color: #157347;
+}
+
+/* --------------------  ALERTS  -------------------- */
+.alert {
+    border-radius: 0.8rem;
+    font-size: 0.95rem;
+}
+
+/* --------------------  TYPOGRAPHY  -------------------- */
+h1, h2, h5 {
+    letter-spacing: 0.3px;
+}
+small {
+    font-size: 0.85rem;
+}
