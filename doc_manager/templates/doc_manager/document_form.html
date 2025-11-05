@@ -18,47 +18,102 @@
       <!-- Info Alert -->
       <div class="alert alert-info small d-flex align-items-center" role="alert">
         <i class="fas fa-info-circle me-2"></i>
-        <span><strong>Note:</strong> Only PDF/PNG/JPEG files are supported for RAG processing.</span>
+        <span><strong>Note:</strong> Select document type below. Scanned PDFs will be processed with DeepSeek-VL OCR on GPU server.</span>
       </div>
 
       <!-- Form -->
       <form method="POST" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
 
-        {% for field in form %}
-          <div class="mb-3">
-            <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
-              {{ field.label }}
-            </label>
+        <!-- Title Field -->
+        <div class="mb-3">
+          <label for="{{ form.title.id_for_label }}" class="form-label fw-semibold">
+            <i class="fas fa-heading me-1"></i> Document Title
+          </label>
+          <input type="text"
+                 name="{{ form.title.name }}"
+                 id="{{ form.title.id_for_label }}"
+                 class="form-control"
+                 placeholder="Enter a descriptive title (e.g., Invoice March 2025)"
+                 value="{{ form.title.value|default_if_none:'' }}"
+                 required>
+          {% for error in form.title.errors %}
+            <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+          {% endfor %}
+        </div>
 
-            {% if field.label == 'Title' %}
-              <input type="text"
-                     name="{{ field.name }}"
-                     id="{{ field.id_for_label }}"
-                     class="form-control"
-                     placeholder="Enter a descriptive title"
-                     value="{{ field.value|default_if_none:'' }}">
-            {% elif field.field.widget.input_type == 'file' %}
-
-              <div class="file-input-wrapper">
-                <label class="file-label btn btn-outline-primary w-100" id="file-label">
-                  <i class="fas fa-file-pdf me-2"></i>
-                  <span id="file-label-text">Choose PDF file</span>
-                  {{ field }}
-                </label>
+        <!-- Document Type Selector -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold mb-3">
+            <i class="fas fa-tasks me-1"></i> Document Type
+          </label>
+          <div class="document-type-selector">
+            
+            <!-- Native PDF Option -->
+            <div class="document-type-option">
+              <input class="form-check-input" 
+                     type="radio" 
+                     name="{{ form.document_type.name }}" 
+                     id="type_native" 
+                     value="native" 
+                     checked>
+              <label class="type-label" for="type_native">
+                <span class="type-icon">📄</span>
+                <strong>Native PDF (Digital)</strong>
+              </label>
+              <div class="type-description">
+                PDF documents with selectable text, created digitally from Word, Excel, or other applications. Processing is fast (~10 seconds per document).
               </div>
+            </div>
 
-            {% else %}
-              {{ field }}
-            {% endif %}
+            <!-- Scanned PDF Option -->
+            <div class="document-type-option">
+              <input class="form-check-input" 
+                     type="radio" 
+                     name="{{ form.document_type.name }}" 
+                     id="type_scanned" 
+                     value="scanned">
+              <label class="type-label" for="type_scanned">
+                <span class="type-icon">📸</span>
+                <strong>Scanned PDF (Images)</strong>
+                <span class="gpu-badge">
+                  <i class="fas fa-microchip"></i> GPU OCR
+                </span>
+              </label>
+              <div class="type-description">
+                Scanned documents, photos, or image-based PDFs that require OCR text extraction. 
+                <strong>Processed with DeepSeek-VL AI on GPU server.</strong> 
+                Processing time: ~1-3 minutes per page.
+              </div>
+            </div>
 
-            {% for error in field.errors %}
-              <div class="invalid-feedback d-block mt-1">{{ error }}</div>
-            {% endfor %}
           </div>
-        {% endfor %}
+          {% for error in form.document_type.errors %}
+            <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+          {% endfor %}
+        </div>
 
-        <!-- Submit -->
+        <!-- File Upload -->
+        <div class="mb-3">
+          <label for="{{ form.file.id_for_label }}" class="form-label fw-semibold">
+            <i class="fas fa-upload me-1"></i> Select PDF File
+          </label>
+          <div class="file-input-wrapper">
+            <label class="file-label btn btn-outline-primary w-100" id="file-label">
+              <i class="fas fa-file-pdf me-2"></i>
+              <span id="file-label-text">Choose PDF file</span>
+              {{ form.file }}
+            </label>
+          </div>
+          <div class="form-text mt-2">
+            <small><i class="fas fa-lightbulb me-1"></i> Max file size: 50MB. Supported format: PDF</small>
+          </div>
+          {% for error in form.file.errors %}
+            <div class="invalid-feedback d-block mt-1">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <!-- Submit Button -->
         <button type="submit" class="btn btn-primary w-100 mt-4 py-2 fw-semibold">
           <i class="fas fa-cloud-upload-alt me-2"></i>Upload Document
         </button>
@@ -66,6 +121,7 @@
 
       <hr class="my-4">
 
+      <!-- Back Link -->
       <div class="text-center">
         <a href="{% url 'uploader_dashboard' %}" class="text-decoration-none small text-muted">
           <i class="fas fa-arrow-left me-1"></i> Back to Dashboard

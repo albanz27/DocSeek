@@ -19,3 +19,30 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    const options = document.querySelectorAll('.document-type-option');
+    
+    options.forEach(option => {
+      const radio = option.querySelector('input[type="radio"]');
+      
+      option.addEventListener('click', function() {
+        // Rimuovi highlight da tutti
+        options.forEach(opt => {
+          opt.style.borderColor = '#dee2e6';
+          opt.style.background = 'white';
+        });
+        
+        // Seleziona questo
+        radio.checked = true;
+        option.style.borderColor = '#0d6efd';
+        option.style.background = '#f0f7ff';
+      });
+      
+      // Highlight iniziale per opzione selezionata
+      if (radio.checked) {
+        option.style.borderColor = '#0d6efd';
+        option.style.background = '#f0f7ff';
+      }
+    });
+  });

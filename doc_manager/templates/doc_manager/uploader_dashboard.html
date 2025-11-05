@@ -2,68 +2,204 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/uploader_dashboard.css' %}">
-{% endblock extra_css %}
+<link rel="stylesheet" href="{% static 'css/doc_manager/uploader_dashboard.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="dashboard-container">
-    <h1 class="display-6 text-primary mb-4 fw-bold">Uploader Dashboard</h1>
+  <h1 class="display-6 text-primary mb-4 fw-bold">
+    <i class="fas fa-tachometer-alt me-2"></i>Uploader Dashboard
+  </h1>
 
-    <!-- STAT CARDS -->
-    <div class="row g-4 mb-4">
-        <div class="col-md-4">
-            <div class="stat-card bg-white text-center border-start border-4 border-primary shadow-sm">
-                <h5 class="text-muted mb-1">Processed Documents</h5>
-                <p class="display-5 fw-bold text-primary mb-0">{{ processed_count }}</p>
-                <small class="text-secondary">Ready for Semantic Search</small>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="stat-card bg-white text-center border-start border-4 border-warning shadow-sm">
-                <h5 class="text-muted mb-1">Pending Processing</h5>
-                <p class="display-5 fw-bold text-warning mb-0">{{ pending_documents.count }}</p>
-                <small class="text-secondary">Requires indexing</small>
-            </div>
-        </div>
+  <!-- STAT CARDS -->
+  <div class="row g-4 mb-4">
+    
+    <!-- Processed Documents -->
+    <div class="col-md-4">
+      <div class="stat-card bg-white text-center border-start border-4 border-success shadow-sm p-3">
+        <h5 class="text-muted mb-2 fw-semibold">
+          <i class="fas fa-check-circle me-1"></i> Processed Documents
+        </h5>
+        <p class="display-4 fw-bold text-success mb-1">{{ processed_count }}</p>
+        <small class="text-secondary">Ready for Semantic Search</small>
+      </div>
     </div>
 
-    <!-- TITLE + BUTTON -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="h5 fw-semibold mb-0">Documents Awaiting Processing</h2>
-        <a href="{% url 'document_upload' %}" class="btn btn-primary btn-lg rounded-pill shadow-sm">
-            <i class="fas fa-upload me-2"></i> Upload New Document
+    <!-- OCR Processing -->
+    <div class="col-md-4">
+      <div class="stat-card bg-white text-center border-start border-4 border-info shadow-sm p-3">
+        <h5 class="text-muted mb-2 fw-semibold">
+          <i class="fas fa-microchip me-1"></i> OCR in Progress
+        </h5>
+        <p class="display-4 fw-bold text-info mb-1">{{ ocr_processing_count }}</p>
+        <small class="text-secondary">Processing on GPU Server</small>
+      </div>
+    </div>
+    
+    <!-- Pending Processing -->
+    <div class="col-md-4">
+      <div class="stat-card bg-white text-center border-start border-4 border-warning shadow-sm p-3">
+        <h5 class="text-muted mb-2 fw-semibold">
+          <i class="fas fa-clock me-1"></i> Awaiting Action
+        </h5>
+        <p class="display-4 fw-bold text-warning mb-1">{{ pending_documents.count }}</p>
+        <small class="text-secondary">Requires Processing</small>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TITLE + UPLOAD BUTTON -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 fw-semibold mb-0">
+      <i class="fas fa-list me-2"></i>Documents Awaiting Processing
+    </h2>
+    <a href="{% url 'document_upload' %}" class="btn btn-primary btn-lg rounded-pill shadow-sm">
+      <i class="fas fa-upload me-2"></i> Upload New Document
+    </a>
+  </div>
+
+  <!-- DOCUMENT LIST -->
+  {% if pending_documents %}
+    <ul class="list-group shadow-sm rounded-3">
+      {% for doc in pending_documents %}
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center mb-2">
+              <strong class="me-2">{{ doc.title }}</strong>
+              
+              <!-- Document Type Badge -->
+              {% if doc.document_type == 'scanned' %}
+                <span class="badge bg-info text-white">
+                  <i class="fas fa-camera me-1"></i> Scanned
+                </span>
+              {% else %}
+                <span class="badge bg-secondary">
+                  <i class="fas fa-file-pdf me-1"></i> Native
+                </span>
+              {% endif %}
+              
+              <!-- Processing State Badge -->
+              {% if doc.processing_state == 'ocr_processing' or doc.processing_state == 'ocr_queued' %}
+                <span class="processing-badge badge-ocr">
+                  <i class="fas fa-microchip me-1"></i> OCR in Progress
+                </span>
+              {% elif doc.processing_state == 'rag_processing' %}
+                <span class="processing-badge badge-rag">
+                  <i class="fas fa-cogs me-1"></i> Indexing
+                </span>
+              {% elif doc.processing_state == 'ocr_failed' %}
+                <span class="processing-badge bg-danger text-white">
+                  <i class="fas fa-times-circle me-1"></i> OCR Failed
+                </span>
+              {% endif %}
+            </div>
+            
+            <small class="text-muted d-block mb-1">
+              <i class="fas fa-calendar me-1"></i> Uploaded {{ doc.uploaded_at|date:"M d, Y H:i" }}
+            </small>
+            
+            <!-- Processing Status -->
+            {% if doc.processing_state == 'ocr_processing' or doc.processing_state == 'ocr_queued' %}
+              <div class="document-status text-info">
+                <span class="status-icon ocr"></span>
+                <strong>Status:</strong> OCR processing on GPU server...
+                {% if doc.processing_output %}
+                  <br><small class="ms-4">{{ doc.processing_output }}</small>
+                {% endif %}
+              </div>
+            {% elif doc.processing_state == 'rag_processing' %}
+              <div class="document-status text-warning">
+                <span class="status-icon processing"></span>
+                <strong>Status:</strong> Creating embeddings for semantic search...
+              </div>
+            {% elif doc.processing_state == 'ocr_completed' %}
+              <div class="document-status text-success">
+                <span class="status-icon completed"></span>
+                <strong>Status:</strong> OCR completed. Ready for indexing.
+              </div>
+            {% elif doc.processing_state == 'ocr_failed' %}
+              <div class="document-status text-danger">
+                <i class="fas fa-exclamation-triangle me-1"></i>
+                <strong>Error:</strong> {{ doc.ocr_error|default:"OCR processing failed" }}
+              </div>
+            {% endif %}
+          </div>
+          
+          <div class="ms-3">
+            {% if doc.processing_state == 'pending' or doc.processing_state == 'ocr_failed' %}
+              <a href="{% url 'document_process' doc.pk %}" 
+                 class="btn btn-success btn-sm rounded-pill">
+                <i class="fas fa-play me-1"></i> 
+                {% if doc.processing_state == 'ocr_failed' %}Retry{% else %}Process{% endif %}
+              </a>
+            {% elif doc.processing_state == 'ocr_processing' or doc.processing_state == 'ocr_queued' %}
+              <button class="btn btn-info btn-sm rounded-pill" disabled>
+                <i class="fas fa-spinner fa-spin me-1"></i> Processing...
+              </button>
+            {% elif doc.processing_state == 'rag_processing' %}
+              <button class="btn btn-warning btn-sm rounded-pill" disabled>
+                <i class="fas fa-cogs fa-spin me-1"></i> Indexing...
+              </button>
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <!-- Empty State -->
+    {% if total_uploaded_count > 0 %}
+      <div class="empty-state alert alert-success shadow-sm" role="alert">
+        <div class="empty-state-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h4 class="fw-bold mb-2">All Clear! 🎉</h4>
+        <p class="mb-3">
+          All your <strong>{{ total_uploaded_count }}</strong> documents are fully processed and ready for semantic search!
+        </p>
+        <a href="{% url 'document_list' %}" class="btn btn-success me-2">
+          <i class="fas fa-search me-1"></i> Search Documents
         </a>
-    </div>
-
-    <!-- DOCUMENT LIST -->
-    {% if pending_documents %}
-        <ul class="list-group shadow-sm rounded-3">
-            {% for doc in pending_documents %}
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <strong>{{ doc.title }}</strong>
-                        <small class="text-muted d-block">Uploaded {{ doc.uploaded_at|date:"M d, Y" }}</small>
-                    </div>
-                    <a href="{% url 'document_process' doc.pk %}" class="btn btn-success btn-sm rounded-pill">
-                        <i class="fas fa-play me-1"></i> Process
-                    </a>
-                </li>
-            {% endfor %}
-        </ul>
+        <a href="{% url 'document_upload' %}" class="btn btn-outline-success">
+          <i class="fas fa-upload me-1"></i> Upload Another
+        </a>
+      </div>
     {% else %}
-        {% if total_uploaded_count > 0 %}
-            <div class="alert alert-success shadow-sm mt-3" role="alert">
-                <i class="fas fa-check-circle me-2"></i>
-                All your <strong>{{ total_uploaded_count }}</strong> documents are fully processed and ready for search!  
-                <a href="{% url 'document_upload' %}" class="alert-link">Upload another one.</a>
-            </div>
-        {% else %}
-            <div class="alert alert-warning shadow-sm mt-3" role="alert">
-                <i class="fas fa-folder-open me-2"></i>
-                You haven’t uploaded any documents yet.  
-                <a href="{% url 'document_upload' %}" class="alert-link">Start by uploading your first PDF!</a>
-            </div>
-        {% endif %}
+      <div class="empty-state alert alert-light border shadow-sm" role="alert">
+        <div class="empty-state-icon">
+          <i class="fas fa-folder-open"></i>
+        </div>
+        <h4 class="fw-bold mb-2">No Documents Yet</h4>
+        <p class="mb-3 text-muted">
+          You haven't uploaded any documents yet. Get started by uploading your first PDF!
+        </p>
+        <a href="{% url 'document_upload' %}" class="btn btn-primary btn-lg">
+          <i class="fas fa-upload me-2"></i> Upload First Document
+        </a>
+      </div>
     {% endif %}
+  {% endif %}
+
+  <!-- Info Box -->
+  <div class="alert alert-info mt-4 shadow-sm" role="alert">
+    <h6 class="alert-heading fw-bold">
+      <i class="fas fa-info-circle me-2"></i>Processing Information
+    </h6>
+    <hr>
+    <p class="mb-2 small">
+      <strong>Native PDFs:</strong> Fast processing (~10 seconds). Text is directly extracted from the PDF.
+    </p>
+    <p class="mb-0 small">
+      <strong>Scanned PDFs:</strong> Requires OCR on GPU server (~1-3 minutes per page). 
+      Uses DeepSeek-VL AI model to extract text from images.
+    </p>
+  </div>
+
 </div>
+
+
+{% block extra_js %}
+<script src="{% static 'js/doc_manager/uploader_dashboard.js' %}"></script>
+{% endblock extra_js %}
+
 {% endblock content %}
