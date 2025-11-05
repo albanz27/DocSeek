@@ -153,7 +153,7 @@ CELERY_RESULT_BACKEND = 'django-db'
 # ssh -N -L 8000:localhost:8000 albanhaka@solaris.micc.unifi.it
 GPU_SERVER_URL = 'http://localhost:8000'
 
-# Timeout per richieste OCR (in secondi)
+# Timeout per richieste OCR
 OCR_REQUEST_TIMEOUT = 300  # 5 minuti
 
 # Celery Task Routes (separazione code)
