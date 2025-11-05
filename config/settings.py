@@ -142,4 +142,27 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0' # Deve puntare al Redis di Docker
 CELERY_RESULT_BACKEND = 'django-db'
 
+# ==================== GPU OCR SERVER CONFIGURATION ====================
 
+# URL del server GPU per OCR
+# Opzione A: Connessione diretta (se firewall lo permette)
+#GPU_SERVER_URL = 'http://solaris.micc.unifi.it:8000'
+
+# Opzione B: SSH Tunnel (se firewall blocca)
+# Ricorda di avviare il tunnel prima:
+# ssh -N -L 8000:localhost:8000 albanhaka@solaris.micc.unifi.it
+GPU_SERVER_URL = 'http://localhost:8000'
+
+# Timeout per richieste OCR (in secondi)
+OCR_REQUEST_TIMEOUT = 300  # 5 minuti
+
+# Celery Task Routes (separazione code)
+CELERY_TASK_ROUTES = {
+    'doc_manager.tasks.process_scanned_document': {'queue': 'ocr'},
+    'doc_manager.tasks.check_ocr_status': {'queue': 'ocr'},
+    'doc_manager.tasks.index_document_rag': {'queue': 'default'},
+}
+
+# Task limits
+CELERY_TASK_TIME_LIMIT = 3600  # 1 ora max per task
+CELERY_TASK_SOFT_TIME_LIMIT = 3000  # 50 minuti soft limit
