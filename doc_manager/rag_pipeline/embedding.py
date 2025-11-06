@@ -9,7 +9,7 @@ def init_chromadb(collection_name: str):
     Inizializza il client ChromaDB e crea (o carica) la collection.
     Garantisce che il database sia creato nel percorso assoluto del progetto.
     """
-    db_path = os.path.join(settings.BASE_DIR, "chromadb_data")
+    db_path = os.path.join(settings.BASE_DIR, "database", "chromadb_data")
     
     # Crea la directory se non esiste
     if not os.path.exists(db_path):
