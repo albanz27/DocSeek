@@ -3,11 +3,12 @@ import chromadb
 from chromadb.utils import embedding_functions
 import time
 from django.conf import settings 
+import uuid
+
 
 def init_chromadb(collection_name: str):
     """
     Inizializza il client ChromaDB e crea (o carica) la collection.
-    Garantisce che il database sia creato nel percorso assoluto del progetto.
     """
     db_path = os.path.join(settings.BASE_DIR, "database", "chromadb_data")
     
@@ -16,11 +17,7 @@ def init_chromadb(collection_name: str):
         os.makedirs(db_path)
     
     client = chromadb.PersistentClient(path=db_path)
-    
     model = "paraphrase-multilingual-MiniLM-L12-v2"
-    
-    # TODO FAI PORVA CON MODELLO DI DEEPSEEK
-    
     embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=model)
     collection = client.get_or_create_collection(name=collection_name, embedding_function=embedding_function)
     
@@ -32,7 +29,7 @@ def add_chunks_to_db(collection, chunks):
     """
     documents = [c["content"] for c in chunks]
     metadatas = [c["metadata"] for c in chunks]
-    ids = [f"chunk_{i}_page_{c['metadata']['page']}" for i, c in enumerate(chunks)]
+    ids = [f"{uuid.uuid4()}" for _ in chunks]
 
     print(f"Inizio l'indicizzazione di {len(documents)} chunk...")
     start = time.time()
