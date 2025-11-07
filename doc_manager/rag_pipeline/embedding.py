@@ -20,7 +20,7 @@ def init_chromadb(collection_name: str):
     model = "paraphrase-multilingual-MiniLM-L12-v2"
     embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=model)
     collection = client.get_or_create_collection(name=collection_name, embedding_function=embedding_function)
-    
+   
     return collection
 
 def add_chunks_to_db(collection, chunks):

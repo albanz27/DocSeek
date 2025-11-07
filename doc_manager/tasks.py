@@ -5,7 +5,7 @@ from django.utils import timezone
 import os
 import requests
 from .models import Document
-from .rag_pipeline.processing import convert_pdf_to_doc, create_chunks
+from .rag_pipeline.processing import convert_pdf_to_doc, create_chunks, create_chunks_scannedpdf
 from .rag_pipeline.embedding import init_chromadb, add_chunks_to_db
 
 COLLECTION_NAME = "docseek_collection"
@@ -26,6 +26,7 @@ def process_scanned_document(document_pk):
         
         file_path = doc_instance.file.path
         
+        # Verifica che il file esista
         if not os.path.exists(file_path):
             print(f"[OCR] ERRORE: File non trovato: {file_path}")
             doc_instance.processing_state = 'ocr_failed'
@@ -34,6 +35,7 @@ def process_scanned_document(document_pk):
             return
         
         try:
+            # Invio del file al server GPU
             with open(file_path, 'rb') as f:
                 files = {'file': (os.path.basename(file_path), f, 'application/pdf')}
                 data = {
@@ -65,7 +67,7 @@ def process_scanned_document(document_pk):
                     )
                 else:
                     raise Exception(f"GPU server returned status {response.status_code}: {response.text}")
-                    
+                
         except requests.ConnectionError as e:
             error_msg = f"Impossibile connettersi al server GPU: {str(e)}"
             print(f"[OCR] ERRORE: {error_msg}")
@@ -194,7 +196,7 @@ def index_document_rag(document_pk):
             doc_instance.processing_state = 'rag_processing'
             doc_instance.save()
             
-            chunks = create_chunks_from_text(
+            chunks = create_chunks_scannedpdf(
                 doc_instance.ocr_text, 
                 doc_instance.title
             )
@@ -246,66 +248,3 @@ def index_document_rag(document_pk):
         doc_instance.processing_state = 'failed'
         doc_instance.processing_output = f"Errore durante indicizzazione: {str(e)}"
         doc_instance.save()
-
-
-def create_chunks_from_text(text, title, chunk_size=500, overlap=50):
-    """
-    Crea chunks da testo puro (per documenti OCR).
-    """
-    chunks = []
-    text_length = len(text)
-    start = 0
-    chunk_num = 0
-    
-    if "=" * 60 in text and "PAGINA" in text:
-        pages = text.split("=" * 60)
-        for page_idx, page_content in enumerate(pages):
-            if not page_content.strip():
-                continue
-            
-            page_num = page_idx
-            if "PAGINA" in page_content:
-                try:
-                    page_num = int(page_content.split("PAGINA")[1].split()[0])
-                except:
-                    page_num = page_idx
-            
-            page_text = page_content.strip()
-            page_start = 0
-            
-            while page_start < len(page_text):
-                end = page_start + chunk_size
-                chunk_text = page_text[page_start:end]
-                
-                if chunk_text.strip():
-                    chunks.append({
-                        "content": chunk_text,
-                        "metadata": {
-                            "page": page_num,
-                            "type": "ocr_text",
-                            "source_title": title
-                        }
-                    })
-                
-                page_start = end - overlap
-                
-    else:
-        while start < text_length:
-            end = start + chunk_size
-            chunk_text = text[start:end]
-            
-            if chunk_text.strip():
-                chunks.append({
-                    "content": chunk_text,
-                    "metadata": {
-                        "page": chunk_num // 10 + 1,  
-                        "type": "ocr_text",
-                        "source_title": title
-                    }
-                })
-            
-            start = end - overlap
-            chunk_num += 1
-    
-    print(f"[RAG] Creati {len(chunks)} chunks da testo OCR")
-    return chunks

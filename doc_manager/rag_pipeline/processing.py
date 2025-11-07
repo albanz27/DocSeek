@@ -1,5 +1,6 @@
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling.datamodel.pipeline_options import PdfPipelineOptions
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 MAX_TEXT_CHUNK_SIZE = 500
 CHUNK_OVERLAP_SIZE = 50 
@@ -109,6 +110,68 @@ def create_chunks(doc):
 
     flush_text_buffer(text_buffer, current_page, all_chunks)
     return all_chunks
+
+def create_chunks_scannedpdf(text, title, chunk_size=MAX_TEXT_CHUNK_SIZE, overlap=CHUNK_OVERLAP_SIZE):
+    """
+    Crea chunks da testo puro per documenti OCR.
+    """
+    chunks = []
+    text_length = len(text)
+    start = 0
+    chunk_num = 0
+    
+    if "=" * 60 in text and "PAGINA" in text:
+        pages = text.split("=" * 60)
+        for page_idx, page_content in enumerate(pages):
+            if not page_content.strip():
+                continue
+            
+            page_num = page_idx
+            if "PAGINA" in page_content:
+                try:
+                    page_num = int(page_content.split("PAGINA")[1].split()[0])
+                except:
+                    page_num = page_idx
+            
+            page_text = page_content.strip()
+            page_start = 0
+            
+            while page_start < len(page_text):
+                end = page_start + chunk_size
+                chunk_text = page_text[page_start:end]
+                
+                if chunk_text.strip():
+                    chunks.append({
+                        "content": chunk_text,
+                        "metadata": {
+                            "page": page_num,
+                            "type": "ocr_text",
+                            "source_title": title
+                        }
+                    })
+                
+                page_start = end - overlap
+                
+    else:
+        while start < text_length:
+            end = start + chunk_size
+            chunk_text = text[start:end]
+            
+            if chunk_text.strip():
+                chunks.append({
+                    "content": chunk_text,
+                    "metadata": {
+                        "page": chunk_num // 10 + 1,  
+                        "type": "ocr_text",
+                        "source_title": title
+                    }
+                })
+            
+            start = end - overlap
+            chunk_num += 1
+    
+    print(f"[RAG] Creati {len(chunks)} chunks da testo OCR")
+    return chunks
 
 def convert_pdf_to_doc(filename: str):
     """
