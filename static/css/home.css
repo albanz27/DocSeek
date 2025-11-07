@@ -1,0 +1,268 @@
+.hero-section {
+    text-align: center;
+    padding: 3rem 0 2rem;
+    animation: fadeIn 0.6s ease-in;
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--primary-color) 0%, #6c5ce7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+.role-card {
+    border: 2px solid transparent;
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    height: 100%;
+    transition: all var(--transition-normal);
+    background: white;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+}
+
+.role-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), #6c5ce7);
+    transform: scaleX(0);
+    transition: transform var(--transition-normal);
+}
+
+.role-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
+}
+
+.role-card:hover::before {
+    transform: scaleX(1);
+}
+
+.role-card.active-role {
+    border-color: var(--success-color);
+    background: linear-gradient(135deg, #ffffff 0%, #f0fff4 100%);
+}
+
+.role-card.active-role::before {
+    background: var(--success-color);
+    transform: scaleX(1);
+}
+
+.role-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+    transition: transform var(--transition-normal);
+}
+
+.role-card:hover .role-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.role-card.active-role .role-icon {
+    color: var(--success-color);
+}
+
+.role-card:not(.active-role) .role-icon {
+    color: var(--primary-color);
+}
+
+.role-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.role-status {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.role-status.active {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.role-status.inactive {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.role-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+.overview-panel {
+    background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+    color: white;
+    border-radius: var(--border-radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    margin-top: 2rem;
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.overview-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.overview-header i {
+    font-size: 1.5rem;
+    margin-right: 0.75rem;
+    color: #63b3ed;
+}
+
+.overview-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.overview-intro {
+    color: #cbd5e0;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.status-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    border-left: 3px solid #63b3ed;
+    transition: all var(--transition-normal);
+}
+
+.status-section:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+}
+
+.status-section:last-child {
+    margin-bottom: 0;
+}
+
+.status-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.status-header i {
+    font-size: 1.3rem;
+    margin-right: 0.75rem;
+}
+
+.status-section.indexing .status-header i {
+    color: #48bb78;
+}
+
+.status-section.search .status-header i {
+    color: #4299e1;
+}
+
+.status-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+}
+
+.status-description {
+    color: #e2e8f0;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.status-action .btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all var(--transition-normal);
+}
+
+.btn-outline-light {
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    background: transparent;
+}
+
+.btn-outline-light:hover {
+    background: white;
+    color: #2d3748;
+    border-color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+}
+
+.btn-info {
+    background: #4299e1;
+    border-color: #4299e1;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #3182ce;
+    border-color: #3182ce;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .role-card {
+        margin-bottom: 1.5rem;
+    }
+
+    .role-icon {
+        font-size: 2.5rem;
+    }
+
+    .overview-panel {
+        padding: 1.5rem;
+    }
+}

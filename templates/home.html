@@ -1,112 +1,174 @@
-{% extends 'base.html' %} 
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/home.css' %}">
+{% endblock %}
 
 {% block content %}
+
+<div class="hero-section">
+    <h1 class="hero-title">
+        <i class="fas fa-book-open me-2"></i>
+        Welcome to DocSeek, {{ user.username }}!
+    </h1>
+    <p class="hero-subtitle">
+        Your intelligent document management and semantic search platform
+    </p>
+</div>
+
+<!-- Roles Cards -->
+{% if user.is_authenticated %}
+<div class="row g-4 mb-4">
+    <!-- Uploader Role Card -->
+    <div class="col-md-6">
+        <div class="role-card {% if user.profile.is_uploader %}active-role{% endif %}">
+            <div class="text-center">
+                <i class="fas fa-cloud-upload-alt role-icon"></i>
+                
+                <h2 class="role-title">Uploader Role</h2>
+                
+                <span class="role-status {% if user.profile.is_uploader %}active{% else %}inactive{% endif %}">
+                    {% if user.profile.is_uploader %}
+                        <i class="fas fa-check-circle me-1"></i> Active
+                    {% else %}
+                        <i class="fas fa-times-circle me-1"></i> Inactive
+                    {% endif %}
+                </span>
+                
+                <p class="role-description">
+                    Can upload documents and manage processing tasks. Access the dashboard to upload new files, track processing status, and manage your document library.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Searcher Role Card -->
+    <div class="col-md-6">
+        <div class="role-card {% if user.profile.is_searcher %}active-role{% endif %}">
+            <div class="text-center">
+                <i class="fas fa-search role-icon"></i>
+                
+                <h2 class="role-title">Searcher Role</h2>
+                
+                <span class="role-status {% if user.profile.is_searcher %}active{% else %}inactive{% endif %}">
+                    {% if user.profile.is_searcher %}
+                        <i class="fas fa-check-circle me-1"></i> Active
+                    {% else %}
+                        <i class="fas fa-times-circle me-1"></i> Inactive
+                    {% endif %}
+                </span>
+                
+                <p class="role-description">
+                    Can query the RAG engine and view results. Use semantic search to find relevant information across your indexed documents with natural language queries.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- System Overview Panel -->
+<div class="overview-panel">
+    <div class="overview-header">
+        <i class="fas fa-chart-line"></i>
+        <h3>System Overview</h3>
+    </div>
+
+    <p class="overview-intro">
+        Thank you for using DocSeek Manager. Your available tools are active in the navigation bar above.
+    </p>
+
+    <!-- Indexing Status -->
+    <div class="status-section indexing">
+        <div class="status-header">
+            <i class="fas fa-sync-alt"></i>
+            <h4>Indexing Status</h4>
+        </div>
+        <p class="status-description">
+            Your indexing tasks are managed by the Celery queue. Check the Uploader Dashboard for any pending documents that require processing action.
+        </p>
+        {% if user.profile.is_uploader %}
+        <div class="status-action">
+            <a href="{% url 'uploader_dashboard' %}" class="btn btn-outline-light">
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Go to Dashboard
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Search Engine Status -->
+    <div class="status-section search">
+        <div class="status-header">
+            <i class="fas fa-database"></i>
+            <h4>Search Engine Status</h4>
+        </div>
+        <p class="status-description">
+            The Semantic Search engine is fully operational. You can now submit complex natural language queries against your indexed documents.
+        </p>
+        {% if user.profile.is_searcher %}
+        <div class="status-action">
+            <a href="{% url 'document_list' %}" class="btn btn-info">
+                <i class="fas fa-search me-2"></i>
+                Start Query
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Stats (Optional) -->
+{% comment %}
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-center p-3">
+            <i class="fas fa-file-pdf fa-2x text-primary mb-2"></i>
+            <h5>12 Documents</h5>
+            <small class="text-muted">Total Indexed</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center p-3">
+            <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+            <h5>3 Pending</h5>
+            <small class="text-muted">Processing Queue</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-center p-3">
+            <i class="fas fa-search fa-2x text-success mb-2"></i>
+            <h5>45 Queries</h5>
+            <small class="text-muted">This Month</small>
+        </div>
+    </div>
+</div>
+{% endcomment %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animazione contatore (se aggiungi le stats)
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('✓ Homepage loaded with enhanced design');
+        
+        // Evidenzia la card del ruolo attivo con un effetto pulse
+        const activeCards = document.querySelectorAll('.role-card.active-role');
+        activeCards.forEach(card => {
+            card.style.animation = 'pulse 2s infinite';
+        });
+    });
     
-    {% if user.is_authenticated %}
-        
-        <div class="row mb-4">
-            <div class="col-12">
-                <h2 class="display-5 text-primary mb-3">Welcome to DocSeek, {{ user.username }}!</h2>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-5 mb-4">
-                <div class="row h-100 g-3">
-                    
-                    <div class="col-12">
-                        <div class="card shadow-sm h-100 border-{{ user.profile.is_uploader|yesno:'success,secondary' }}">
-                            <div class="card-body d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="card-subtitle text-muted mb-1">Uploader Role</h6>
-                                    <h4 class="card-title fw-bold text-{{ user.profile.is_uploader|yesno:'success,secondary' }}">
-                                        {% if user.profile.is_uploader %}
-                                            Active <i class="fas fa-check-circle"></i>
-                                        {% else %}
-                                            Inactive <i class="fas fa-times-circle"></i>
-                                        {% endif %}
-                                    </h4>
-                                </div>
-                                <i class="fas fa-upload fa-2x text-{{ user.profile.is_uploader|yesno:'success,secondary' }}"></i>
-                            </div>
-                            <div class="card-footer bg-transparent border-top-0">
-                                <p class="card-text small text-muted">Can upload documents and manage processing tasks.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-12">
-                        <div class="card shadow-sm h-100 border-{{ user.profile.is_searcher|yesno:'info,secondary' }}">
-                            <div class="card-body d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="card-subtitle text-muted mb-1">Searcher Role</h6>
-                                    <h4 class="card-title fw-bold text-{{ user.profile.is_searcher|yesno:'info,secondary' }}">
-                                        {% if user.profile.is_searcher %}
-                                            Active <i class="fas fa-check-circle"></i>
-                                        {% else %}
-                                            Inactive <i class="fas fa-times-circle"></i>
-                                        {% endif %}
-                                    </h4>
-                                </div>
-                                <i class="fas fa-search fa-2x text-{{ user.profile.is_searcher|yesno:'info,secondary' }}"></i>
-                            </div>
-                            <div class="card-footer bg-transparent border-top-0">
-                                <p class="card-text small text-muted">Can query the RAG engine and view results.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="col-md-7 mb-4">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-dark text-white">
-                        <i class="fas fa-chart-line me-1"></i> System Overview
-                    </div>
-                    <div class="card-body">
-                        
-                        <p class="card-text lead">
-                            Thank you for using DocSeek Manager. Your available tools are active in the navigation bar above.
-                        </p>
-                        
-                        <hr>
-
-                        {% if user.profile.is_uploader %}
-                            <h5 class="text-success mb-3"><i class="fas fa-sync fa-spin me-2"></i> Indexing Status</h5>
-                            <p class="small text-muted">
-                                Your indexing tasks are managed by the Celery queue. Check the Uploader Dashboard for any pending documents that require processing action.
-                            </p>
-                            <a href="{% url 'uploader_dashboard' %}" class="btn btn-sm btn-outline-success">
-                                <i class="fas fa-tachometer-alt me-1"></i> Go to Dashboard
-                            </a>
-                        {% endif %}
-
-                        {% if user.profile.is_searcher %}
-                            <h5 class="mt-4 text-info mb-3"><i class="fas fa-cogs me-2"></i> Search Engine Status</h5>
-                            <p class="small text-muted">
-                                The Semantic Search engine is fully operational. You can now submit complex natural language queries against your indexed documents.
-                            </p>
-                            <a href="{% url 'document_list' %}" class="btn btn-sm btn-info text-white">
-                                <i class="fas fa-search me-1"></i> Start Query
-                            </a>
-                        {% endif %}
-                        
-                    </div>
-                </div>
-            </div>
-
-        </div> 
-        
-        {% else %}
-        <div class="jumbotron text-center bg-light p-5 rounded">
-            <h1 class="display-4">Welcome to DocSeek</h1>
-            <p class="lead">Your platform for secure document management and advanced semantic search (RAG).</p>
-            <hr class="my-4">
-            <p>Please log in or register to access the full functionality.</p>
-            <a class="btn btn-primary btn-lg" href="{% url 'login' %}" role="button">Log In</a>
-            <a class="btn btn-secondary btn-lg" href="{% url 'register' %}" role="button">Sign Up</a>
-        </div>
-    {% endif %}
-
-{% endblock content %}
+    // Definisci l'animazione pulse
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); }
+            50% { box-shadow: 0 6px 20px rgba(40, 167, 69, 0.2); }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{% endblock %}
