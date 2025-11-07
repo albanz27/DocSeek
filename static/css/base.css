@@ -1,7 +1,7 @@
 /* -------------------- 1. RESET E COLORI -------------------- */
 
 body {
-    background-color: #f8f9fa;
+    background-color: #f8f8fa;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #212529;
 }
@@ -91,3 +91,68 @@ body {
 .nav-link i, .btn i {
     margin-right: 6px;
 }
+
+/* -------------------- 2. NAVBAR MODIFICATA -------------------- */
+
+.navbar {
+    background-color: #ffffff !important; /* Manteniamo lo sfondo chiaro */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Ombra più pronunciata per staccare */
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.navbar-brand {
+    font-weight: 800; /* Leggermente più spesso */
+    font-size: 1.5rem; /* Rendi il logo più grande */
+    color: #4a54e1 !important;
+}
+
+/* Modifica i link principali */
+.navbar-nav .nav-link {
+    font-weight: 600;
+    color: #555c63; /* Colore base dei link leggermente più scuro */
+    transition: all 0.2s ease-in-out;
+    padding-left: 0.8rem !important;
+    padding-right: 0.8rem !important;
+}
+
+/* Effetto al passaggio del mouse sui link */
+.navbar-nav .nav-link:hover {
+    color: #4a54e1 !important; /* Colore primario al passaggio del mouse */
+    background-color: #f4f5fd; /* Leggero sfondo al passaggio del mouse */
+    border-radius: 6px;
+}
+
+/* Link attivo */
+.navbar-nav .nav-item .nav-link.active {
+    color: #4a54e1 !important;
+    background-color: #e8ebff; /* Sfondo chiaro primario per il link attivo */
+    border-bottom: none; /* Rimuovi il bordo inferiore se hai uno sfondo */
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+/* Icona utente (Alban) */
+.user-icon {
+    font-size: 1.5rem; /* Icona leggermente più grande */
+    color: #4a54e1;
+}
+
+.navbar-nav .dropdown-toggle {
+    color: #343a40 !important;
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+/* Stile per l'icona del menu "Hamburger" (Toggler) */
+.navbar-toggler {
+    border: none;
+    padding: 0.25rem 0.5rem;
+    transition: box-shadow 0.2s;
+}
+
+.navbar-toggler:focus {
+    box-shadow: 0 0 0 0.25rem rgba(74, 84, 225, 0.5); /* Anello focus colorato */
+    outline: none;
+}
+
