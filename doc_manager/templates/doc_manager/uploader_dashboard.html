@@ -157,12 +157,16 @@
         <p class="mb-3">
           All your <strong>{{ total_uploaded_count }}</strong> documents are fully processed and ready for semantic search!
         </p>
+        {% if user.profile.is_searcher %}
         <a href="{% url 'document_list' %}" class="btn btn-success me-2">
           <i class="fas fa-search me-1"></i> Search Documents
         </a>
+        {% endif %}
+        {% if user.profile.is_uploader %}
         <a href="{% url 'document_upload' %}" class="btn btn-outline-success">
           <i class="fas fa-upload me-1"></i> Upload Another
         </a>
+        {% endif %}
       </div>
     {% else %}
       <div class="empty-state alert alert-light border shadow-sm" role="alert">

@@ -16,11 +16,13 @@
       </h2>
 
       <!-- Info Alert -->
+       <!--
       <div class="alert alert-info small d-flex align-items-center" role="alert">
         <i class="fas fa-info-circle me-2"></i>
         <span><strong>Note:</strong> Select document type below. Scanned PDFs will be processed with DeepSeek-VL OCR on GPU server.</span>
       </div>
-
+      -->
+      
       <!-- Form -->
       <form method="POST" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
@@ -34,7 +36,7 @@
                  name="{{ form.title.name }}"
                  id="{{ form.title.id_for_label }}"
                  class="form-control"
-                 placeholder="Enter a descriptive title (e.g., Invoice March 2025)"
+                 placeholder="Enter a descriptive title"
                  value="{{ form.title.value|default_if_none:'' }}"
                  required>
           {% for error in form.title.errors %}

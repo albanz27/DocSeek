@@ -83,15 +83,15 @@ textarea:focus {
 }
 
 .file-selected {
-  background-color: #4cb8ff;
+  background-color: #152bd2;
   color: #fff;
-  border-color: #4cb8ff;
+  border-color: #152bd2;
   transition: all 0.2s ease;
 }
 
 .file-selected:hover {
-  background-color: #3aa8ef;
-  border-color: #3aa8ef;
+  background-color: #081ec4;
+  border-color: #081ec4;
   transform: scale(1.02);
 }
 
