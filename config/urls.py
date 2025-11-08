@@ -29,6 +29,8 @@ urlpatterns = [
     path('', include('users.urls')),  
 
     path('documents/', include('doc_manager.urls')),  
+
+    path('__debug__/', include('debug_toolbar.urls')),
 ]
 
 '''

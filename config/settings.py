@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'users',
     'doc_manager',
     'django_celery_results',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +49,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -166,3 +168,7 @@ CELERY_TASK_ROUTES = {
 # Task limits
 CELERY_TASK_TIME_LIMIT = 3600  # 1 ora max per task
 CELERY_TASK_SOFT_TIME_LIMIT = 3000  # 50 minuti soft limit
+
+INTERNAL_IPS = [
+    '127.0.0.1'
+]
