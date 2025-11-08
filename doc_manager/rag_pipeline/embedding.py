@@ -52,14 +52,7 @@ def add_chunks_to_db(collection, chunks, document_pk: int):
         )
 
 
-
 def delete_document_embeddings(collection, document_pk: int): 
-    print("<--------------------------------------->")
-    print("<--------------------------------------->")
-    print("<--------------------------------------->")
-    print("<--------------------------------------->")
-    print("<--------------------------------------->")
-
     file_id_string = str(document_pk) 
     where_filter = {"document_pk": file_id_string }
     deleted_ids = collection.delete(where=where_filter)
