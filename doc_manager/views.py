@@ -13,21 +13,11 @@ from .mixins import SearcherRequiredMixin, UploaderRequiredMixin
 from .tasks import index_document_rag, process_scanned_document
 from .rag_pipeline.embedding import init_chromadb, delete_document_embeddings, add_chunks_to_db
 from .rag_pipeline.search import run_queries
+from .forms import DocumentUploadForm
 from itertools import groupby
 from operator import itemgetter
 
 COLLECTION_NAME = "docseek_collection"
-
-
-# Form per l'upload del documento con selezione del tipo
-class DocumentUploadForm(forms.ModelForm):
-    """Form personalizzato per l'upload con selezione del tipo"""
-    class Meta:
-        model = Document
-        fields = ['title', 'file', 'document_type']
-        widgets = {
-            'document_type': forms.RadioSelect(attrs={'class': 'form-check-input'}),
-        }
 
 
 # View per l'upload del documento
