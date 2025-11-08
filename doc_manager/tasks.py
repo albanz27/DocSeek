@@ -229,7 +229,7 @@ def index_document_rag(document_pk):
         # Setup del DB e indicizzazione
         print(f"[RAG] Indicizzazione {len(chunks)} chunks in ChromaDB...")
         collection = init_chromadb(COLLECTION_NAME)
-        add_chunks_to_db(collection, chunks)
+        add_chunks_to_db(collection, chunks, document_pk)
 
         # Aggiorna stato documento
         doc_instance.is_processed = True

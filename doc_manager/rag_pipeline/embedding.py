@@ -20,25 +20,51 @@ def init_chromadb(collection_name: str):
     model = "paraphrase-multilingual-MiniLM-L12-v2"
     embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=model)
     collection = client.get_or_create_collection(name=collection_name, embedding_function=embedding_function)
-   
+    
     return collection
 
-def add_chunks_to_db(collection, chunks):
+def add_chunks_to_db(collection, chunks, document_pk: int):
     """
     Aggiunge i chunk alla collection ChromaDB.
     """
     documents = [c["content"] for c in chunks]
-    metadatas = [c["metadata"] for c in chunks]
+    metadatas_with_pk = []
+    doc_pk_str = str(document_pk) 
+    
+    for c in chunks:
+        meta = c["metadata"].copy() 
+        meta["document_pk"] = doc_pk_str 
+        metadatas_with_pk.append(meta)
+
     ids = [f"{uuid.uuid4()}" for _ in chunks]
 
-    print(f"Inizio l'indicizzazione di {len(documents)} chunk...")
-    start = time.time()
-
     try:
-        collection.add(documents=documents, metadatas=metadatas, ids=ids)
+        collection.add(
+            documents=documents, 
+            metadatas=metadatas_with_pk,
+            ids=ids
+        )
     except chromadb.errors.IDAlreadyExistsError:
-        print("ID già esistenti. Eseguo upsert...")
-        collection.upsert(documents=documents, metadatas=metadatas, ids=ids)
+        collection.upsert(
+            documents=documents, 
+            metadatas=metadatas_with_pk,
+            ids=ids
+        )
 
-    elapsed = time.time() - start
-    print(f"Indicizzazione completata in {elapsed:.2f}s. Totale chunk nel DB: {collection.count()}")
+
+
+def delete_document_embeddings(collection, document_pk: int): 
+    print("<--------------------------------------->")
+    print("<--------------------------------------->")
+    print("<--------------------------------------->")
+    print("<--------------------------------------->")
+    print("<--------------------------------------->")
+
+    file_id_string = str(document_pk) 
+    where_filter = {"document_pk": file_id_string }
+    deleted_ids = collection.delete(where=where_filter)
+    
+    if deleted_ids is None:
+        deleted_ids = []
+    
+    return deleted_ids

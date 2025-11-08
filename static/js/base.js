@@ -151,7 +151,7 @@
     }
 
 
-    // Validazione HTML5 migliorata per i form
+    // Inizializza la validazione dei form
     function initFormValidation() {
         const forms = document.querySelectorAll('.needs-validation');
 

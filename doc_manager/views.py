@@ -6,17 +6,20 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django import forms
 import os
+from django.contrib import messages
 
 from .models import Document
 from .mixins import SearcherRequiredMixin, UploaderRequiredMixin 
 from .tasks import index_document_rag, process_scanned_document
-from .rag_pipeline.embedding import init_chromadb
+from .rag_pipeline.embedding import init_chromadb, delete_document_embeddings, add_chunks_to_db
 from .rag_pipeline.search import run_queries
 from itertools import groupby
 from operator import itemgetter
 
 COLLECTION_NAME = "docseek_collection"
 
+
+# Form per l'upload del documento con selezione del tipo
 class DocumentUploadForm(forms.ModelForm):
     """Form personalizzato per l'upload con selezione del tipo"""
     class Meta:
@@ -26,6 +29,8 @@ class DocumentUploadForm(forms.ModelForm):
             'document_type': forms.RadioSelect(attrs={'class': 'form-check-input'}),
         }
 
+
+# View per l'upload del documento
 class DocumentCreateView(UploaderRequiredMixin, CreateView):
     model = Document 
     form_class = DocumentUploadForm
@@ -51,6 +56,8 @@ class DocumentCreateView(UploaderRequiredMixin, CreateView):
         
         return redirect(reverse_lazy('document_process', kwargs={'pk': self.object.pk}))    
 
+
+# View per la lista dei documenti
 class DocumentListView(SearcherRequiredMixin, ListView):
     model = Document
     template_name = 'doc_manager/document_list.html'
@@ -90,7 +97,8 @@ class DocumentListView(SearcherRequiredMixin, ListView):
         
         return context
     
-    
+
+# View per il processamento del documento
 class DocumentProcessView(UpdateView):
     model = Document 
     fields = ['is_processed', 'processing_output'] 
@@ -140,7 +148,8 @@ class DocumentProcessView(UpdateView):
         doc_instance.save()
         return redirect(self.success_url)
     
-class DocumentDeleteView(UploaderRequiredMixin, DeleteView):
+# View per l'eliminazione del documento
+class DocumentDeleteView(DeleteView):
     """View per eliminare documenti - solo l'uploader può eliminare i propri documenti"""
     model = Document
     template_name = 'doc_manager/document_confirm_delete.html'
@@ -151,66 +160,31 @@ class DocumentDeleteView(UploaderRequiredMixin, DeleteView):
         
         if doc.uploader != self.request.user:
             raise Http404("You are not authorized to delete this document.")
-    
+            
         return doc
     
-    def delete(self, request, *args, **kwargs):
-        """
-        Sovrascrive il metodo delete per:
-        1. Eliminare i file fisici (originale e processato)
-        2. Rimuovere i chunk da ChromaDB
-        3. Eliminare il record dal database
-        """
+    def form_valid(self, form):
         self.object = self.get_object()
-        document_title = self.object.title
-        document_id = self.object.pk
-        
-        try:
-            # Elimina i file fisici
-            if self.object.file and os.path.isfile(self.object.file.path):
-                os.remove(self.object.file.path)
-                print(f"[DELETE] File originale eliminato: {self.object.file.path}")
+        document_id = self.object.pk  
+
+        if self.object.file and os.path.isfile(self.object.file.path):
+            os.remove(self.object.file.path)
+            print(f"[DELETE] File originale eliminato: {self.object.file.path}")
+
+        if self.object.processed_file and os.path.isfile(self.object.processed_file.path):
+            os.remove(self.object.processed_file.path)
+            print(f"[DELETE] File processato eliminato: {self.object.processed_file.path}")
+
+        if self.object.is_processed:
+            collection = init_chromadb(COLLECTION_NAME) 
+            delete_document_embeddings(collection, document_id) 
+            print(f"[DELETE] Embeddings RAG eliminati per Documento ID: {document_id}")
             
-            if self.object.processed_file and os.path.isfile(self.object.processed_file.path):
-                os.remove(self.object.processed_file.path)
-                print(f"[DELETE] File processato eliminato: {self.object.processed_file.path}")
-            
-            # Rimuovi i chunk da ChromaDB se il documento era processato
-            if self.object.is_processed:
-                try:
-                    collection = init_chromadb(COLLECTION_NAME)
-                    
-                    # Cerca tutti i chunk con document_id corrispondente
-                    results = collection.get(
-                        where={"document_id": document_id}
-                    )
-                    
-                    if results and results['ids']:
-                        collection.delete(ids=results['ids'])
-                        print(f"[DELETE] Eliminati {len(results['ids'])} chunk da ChromaDB per documento ID {document_id}")
-                    else:
-                        print(f"[DELETE] Nessun chunk trovato in ChromaDB per documento ID {document_id}")
-                        
-                except Exception as e:
-                    print(f"[DELETE] Errore durante eliminazione chunk da ChromaDB: {e}")
-            
-            # Elimina il record dal database
-            self.object.delete()
-            
-            messages.success(
-                request, 
-                f"Document '{document_title}' has been successfully deleted along with all associated data."
-            )
-            
-        except Exception as e:
-            messages.error(
-                request, 
-                f"Error deleting document '{document_title}': {str(e)}"
-            )
-            print(f"[DELETE] Errore critico durante eliminazione: {e}")
-        
+        self.object.delete()
         return redirect(self.success_url)
 
+
+# View per la dashboard dell'uploader
 class UploaderDashboardView(UploaderRequiredMixin, ListView):
     model = Document
     template_name = 'doc_manager/uploader_dashboard.html'
@@ -233,14 +207,12 @@ class UploaderDashboardView(UploaderRequiredMixin, ListView):
             is_processed=True
         ).count()
         
-        # Aggiungi statistiche OCR
         context['ocr_processing_count'] = Document.objects.filter(
             uploader=self.request.user,
             document_type='scanned',
             processing_state__in=['ocr_queued', 'ocr_processing']
         ).count()
         
-        # Aggiungi documenti processati
         context['processed_documents'] = Document.objects.filter(
             uploader=self.request.user,
             is_processed=True
