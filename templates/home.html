@@ -10,7 +10,11 @@
 <div class="hero-section">
     <h1 class="hero-title">
         <i class="fas fa-book-open me-2"></i>
-        Welcome to DocSeek, {{ user.username }}!
+        Welcome to DocSeek
+        {% if user.is_authenticated %}
+        , {{ user.username }}
+        {% endif %}
+        !
     </h1>
     <p class="hero-subtitle">
         Your intelligent document management and semantic search platform

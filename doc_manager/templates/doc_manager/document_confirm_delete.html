@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/doc_manager/document_confirm_delete.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card delete-confirm-card p-4">
+        <div class="text-center">
+            <i class="fas fa-exclamation-triangle warning-icon"></i>
+            <h2 class="text-danger fw-bold mb-3">Confirm Deletion</h2>
+            <p class="lead text-muted mb-4">
+                Are you sure you want to delete this document?
+            </p>
+        </div>
+
+        <div class="document-info">
+            <h5>
+                <i class="fas fa-file-pdf me-2"></i>
+                {{ document.title }}
+            </h5>
+            <p>
+                <strong>Type:</strong> 
+                {% if document.document_type == 'scanned' %}
+                    <span class="badge bg-info text-white">Scanned PDF</span>
+                {% else %}
+                    <span class="badge bg-secondary">Native PDF</span>
+                {% endif %}
+            </p>
+            <p>
+                <strong>Uploaded:</strong> {{ document.uploaded_at|date:"M d, Y H:i" }}
+            </p>
+            <p>
+                <strong>Status:</strong>
+                {% if document.is_processed %}
+                    <span class="badge bg-success">Processed</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="warning-list">
+            <h6 class="fw-bold mb-2">
+                <i class="fas fa-info-circle me-2"></i>
+                This action will permanently:
+            </h6>
+            <ul class="mb-0">
+                <li>Delete the document file from the server</li>
+                {% if document.processed_file %}
+                <li>Delete the processed file with OCR data</li>
+                {% endif %}
+                {% if document.is_processed %}
+                <li>Remove all indexed chunks from the search database</li>
+                {% endif %}
+                <li>Remove the document record from the system</li>
+            </ul>
+        </div>
+
+        <div class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <strong>Warning:</strong> This action cannot be undone!
+        </div>
+
+        <form method="POST" class="mt-4">
+            {% csrf_token %}
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{% url 'uploader_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash-alt me-2"></i>
+                    Yes, Delete Document
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

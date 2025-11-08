@@ -1,10 +1,11 @@
 from django.http import Http404
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.views.generic import ListView
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django import forms
+import os
 
 from .models import Document
 from .mixins import SearcherRequiredMixin, UploaderRequiredMixin 
@@ -139,6 +140,77 @@ class DocumentProcessView(UpdateView):
         doc_instance.save()
         return redirect(self.success_url)
     
+class DocumentDeleteView(UploaderRequiredMixin, DeleteView):
+    """View per eliminare documenti - solo l'uploader può eliminare i propri documenti"""
+    model = Document
+    template_name = 'doc_manager/document_confirm_delete.html'
+    success_url = reverse_lazy('uploader_dashboard')
+    
+    def get_object(self, queryset=None):
+        doc = super().get_object(queryset)
+        
+        if doc.uploader != self.request.user:
+            raise Http404("You are not authorized to delete this document.")
+    
+        return doc
+    
+    def delete(self, request, *args, **kwargs):
+        """
+        Sovrascrive il metodo delete per:
+        1. Eliminare i file fisici (originale e processato)
+        2. Rimuovere i chunk da ChromaDB
+        3. Eliminare il record dal database
+        """
+        self.object = self.get_object()
+        document_title = self.object.title
+        document_id = self.object.pk
+        
+        try:
+            # Elimina i file fisici
+            if self.object.file and os.path.isfile(self.object.file.path):
+                os.remove(self.object.file.path)
+                print(f"[DELETE] File originale eliminato: {self.object.file.path}")
+            
+            if self.object.processed_file and os.path.isfile(self.object.processed_file.path):
+                os.remove(self.object.processed_file.path)
+                print(f"[DELETE] File processato eliminato: {self.object.processed_file.path}")
+            
+            # Rimuovi i chunk da ChromaDB se il documento era processato
+            if self.object.is_processed:
+                try:
+                    collection = init_chromadb(COLLECTION_NAME)
+                    
+                    # Cerca tutti i chunk con document_id corrispondente
+                    results = collection.get(
+                        where={"document_id": document_id}
+                    )
+                    
+                    if results and results['ids']:
+                        collection.delete(ids=results['ids'])
+                        print(f"[DELETE] Eliminati {len(results['ids'])} chunk da ChromaDB per documento ID {document_id}")
+                    else:
+                        print(f"[DELETE] Nessun chunk trovato in ChromaDB per documento ID {document_id}")
+                        
+                except Exception as e:
+                    print(f"[DELETE] Errore durante eliminazione chunk da ChromaDB: {e}")
+            
+            # Elimina il record dal database
+            self.object.delete()
+            
+            messages.success(
+                request, 
+                f"Document '{document_title}' has been successfully deleted along with all associated data."
+            )
+            
+        except Exception as e:
+            messages.error(
+                request, 
+                f"Error deleting document '{document_title}': {str(e)}"
+            )
+            print(f"[DELETE] Errore critico durante eliminazione: {e}")
+        
+        return redirect(self.success_url)
+
 class UploaderDashboardView(UploaderRequiredMixin, ListView):
     model = Document
     template_name = 'doc_manager/uploader_dashboard.html'
@@ -167,5 +239,11 @@ class UploaderDashboardView(UploaderRequiredMixin, ListView):
             document_type='scanned',
             processing_state__in=['ocr_queued', 'ocr_processing']
         ).count()
+        
+        # Aggiungi documenti processati
+        context['processed_documents'] = Document.objects.filter(
+            uploader=self.request.user,
+            is_processed=True
+        ).order_by('-uploaded_at')
         
         return context

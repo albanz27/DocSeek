@@ -59,9 +59,9 @@
     </a>
   </div>
 
-  <!-- DOCUMENT LIST -->
+  <!-- DOCUMENT LIST - PENDING -->
   {% if pending_documents %}
-    <ul class="list-group shadow-sm rounded-3">
+    <ul class="list-group shadow-sm rounded-3 mb-4">
       {% for doc in pending_documents %}
         <li class="list-group-item d-flex justify-content-between align-items-start">
           <div class="flex-grow-1">
@@ -126,7 +126,7 @@
             {% endif %}
           </div>
           
-          <div class="ms-3">
+          <div class="ms-3 d-flex gap-2">
             {% if doc.processing_state == 'pending' or doc.processing_state == 'ocr_failed' %}
               <a href="{% url 'document_process' doc.pk %}" 
                  class="btn btn-success btn-sm rounded-pill">
@@ -142,34 +142,28 @@
                 <i class="fas fa-cogs fa-spin me-1"></i> Indexing...
               </button>
             {% endif %}
+            
+            <!-- Delete Button -->
+            <a href="{% url 'document_delete' doc.pk %}" 
+               class="btn btn-outline-danger btn-sm rounded-pill"
+               onclick="return confirm('Are you sure you want to delete this document? This action cannot be undone.')">
+              <i class="fas fa-trash-alt"></i>
+            </a>
           </div>
         </li>
       {% endfor %}
     </ul>
   {% else %}
-    <!-- Empty State -->
-    {% if total_uploaded_count > 0 %}
-      <div class="empty-state alert alert-success shadow-sm" role="alert">
-        <div class="empty-state-icon">
-          <i class="fas fa-check-circle"></i>
+    <!-- Empty State for Pending -->
+    {% if processed_count > 0 %}
+      <div class="alert alert-success shadow-sm mb-4" role="alert">
+        <div class="d-flex align-items-center">
+          <i class="fas fa-check-circle me-2"></i>
+          <span>All documents are processed! No pending tasks.</span>
         </div>
-        <h4 class="fw-bold mb-2">All Clear! 🎉</h4>
-        <p class="mb-3">
-          All your <strong>{{ total_uploaded_count }}</strong> documents are fully processed and ready for semantic search!
-        </p>
-        {% if user.profile.is_searcher %}
-        <a href="{% url 'document_list' %}" class="btn btn-success me-2">
-          <i class="fas fa-search me-1"></i> Search Documents
-        </a>
-        {% endif %}
-        {% if user.profile.is_uploader %}
-        <a href="{% url 'document_upload' %}" class="btn btn-outline-success">
-          <i class="fas fa-upload me-1"></i> Upload Another
-        </a>
-        {% endif %}
       </div>
     {% else %}
-      <div class="empty-state alert alert-light border shadow-sm" role="alert">
+      <div class="empty-state alert alert-light border shadow-sm mb-4" role="alert">
         <div class="empty-state-icon">
           <i class="fas fa-folder-open"></i>
         </div>
@@ -184,6 +178,62 @@
     {% endif %}
   {% endif %}
 
+  <!-- PROCESSED DOCUMENTS SECTION -->
+  {% if processed_documents %}
+  <hr class="my-4">
+  
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h5 fw-semibold mb-0">
+      <i class="fas fa-check-circle me-2 text-success"></i>Processed Documents
+    </h2>
+  </div>
+
+  <ul class="list-group shadow-sm rounded-3">
+    {% for doc in processed_documents %}
+      <li class="list-group-item d-flex justify-content-between align-items-start">
+        <div class="flex-grow-1">
+          <div class="d-flex align-items-center mb-2">
+            <strong class="me-2">{{ doc.title }}</strong>
+            
+            <!-- Document Type Badge -->
+            {% if doc.document_type == 'scanned' %}
+              <span class="badge bg-info text-white">
+                <i class="fas fa-camera me-1"></i> Scanned
+              </span>
+            {% else %}
+              <span class="badge bg-secondary">
+                <i class="fas fa-file-pdf me-1"></i> Native
+              </span>
+            {% endif %}
+            
+            <span class="badge bg-success ms-2">
+              <i class="fas fa-check-circle me-1"></i> Processed
+            </span>
+          </div>
+          
+          <small class="text-muted d-block mb-1">
+            <i class="fas fa-calendar me-1"></i> Uploaded {{ doc.uploaded_at|date:"M d, Y H:i" }}
+          </small>
+          
+          {% if doc.processing_output %}
+          <small class="text-success d-block">
+            <i class="fas fa-info-circle me-1"></i> {{ doc.processing_output|truncatechars:100 }}
+          </small>
+          {% endif %}
+        </div>
+        
+        <div class="ms-3">
+          <a href="{% url 'document_delete' doc.pk %}" 
+             class="btn btn-outline-danger btn-sm rounded-pill"
+             onclick="return confirm('Are you sure you want to delete this processed document? This will also remove it from the search index.')">
+            <i class="fas fa-trash-alt me-1"></i> Delete
+          </a>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
   <!-- Info Box -->
   <div class="alert alert-info mt-4 shadow-sm" role="alert">
     <h6 class="alert-heading fw-bold">
@@ -193,9 +243,12 @@
     <p class="mb-2 small">
       <strong>Native PDFs:</strong> Fast processing (~10 seconds). Text is directly extracted from the PDF.
     </p>
-    <p class="mb-0 small">
+    <p class="mb-2 small">
       <strong>Scanned PDFs:</strong> Requires OCR on GPU server (~1-3 minutes per page). 
       Uses DeepSeek-VL AI model to extract text from images.
+    </p>
+    <p class="mb-0 small">
+      <strong>Deletion:</strong> You can delete any document at any time. Processed documents will also be removed from the search index.
     </p>
   </div>
 
