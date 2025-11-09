@@ -1,9 +1,11 @@
-from django.http import Http404
+from django.http import Http404, FileResponse, HttpResponse
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from django.views.generic import ListView
-from django.shortcuts import get_object_or_404, redirect
+from django.views.generic import ListView, DetailView
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django import forms
 import os
 from django.contrib import messages
@@ -209,3 +211,61 @@ class UploaderDashboardView(UploaderRequiredMixin, ListView):
         ).order_by('-uploaded_at')
         
         return context
+
+
+# View per visualizzare il documento PDF con PDF.js
+class DocumentViewerView(LoginRequiredMixin, DetailView):
+    """
+    View per visualizzare un documento PDF con PDF.js integrato.
+    Supporta l'apertura diretta a una pagina specifica tramite parametro ?page=N
+    """
+    model = Document
+    template_name = 'doc_manager/document_viewer.html'
+    context_object_name = 'document'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        page_number = self.request.GET.get('page', 1)
+        try:
+            page_number = int(page_number)
+        except (ValueError, TypeError):
+            page_number = 1
+        
+        context['initial_page'] = page_number
+        
+        document = self.get_object()
+        if document.processed_file:
+            context['pdf_url'] = document.processed_file.url
+        else:
+            context['pdf_url'] = document.file.url
+        
+        return context
+
+
+@login_required
+def serve_document_file(request, pk):
+    """
+    Serve il file PDF del documento.
+    """
+    document = get_object_or_404(Document, pk=pk)
+    
+    # Verifica permessi: l'uploader o un searcher possono visualizzare
+    if not (document.uploader == request.user or request.user.profile.is_searcher):
+        raise Http404("You don't have permission to view this document.")
+    
+    # Determina quale file servire
+    if document.processed_file and os.path.exists(document.processed_file.path):
+        file_path = document.processed_file.path
+        filename = os.path.basename(document.processed_file.name)
+    elif document.file and os.path.exists(document.file.path):
+        file_path = document.file.path
+        filename = os.path.basename(document.file.name)
+    else:
+        raise Http404("Document file not found.")
+    
+    # Serve il file
+    response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{filename}"'
+    
+    return response

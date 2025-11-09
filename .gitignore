@@ -5,3 +5,4 @@ chromadb_data/
 test_ocr_connection.py
 flask.py
 database/db.sqlite3
+pdfjs/
