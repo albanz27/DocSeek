@@ -36,7 +36,8 @@ def convert_table_to_markdown(table_data, page_num: int) -> str:
     if not grid:
         return f"Tabella vuota a pagina {page_num}"
 
-    markdown = f"Tabella a pagina {page_num}:\n"
+    #markdown = f"Tabella a pagina {page_num}:\n"
+    #markdown = ""
     markdown += "| " + " | ".join(cell.text for cell in grid[0]) + " |\n"
     markdown += "| " + " | ".join(["---"] * len(grid[0])) + " |\n"
     for row in grid[1:]:

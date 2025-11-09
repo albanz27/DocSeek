@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load rag_filters %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/doc_manager/document_list.css' %}">
@@ -13,7 +14,7 @@
         <!-- Search Form -->
         <form method="GET" action="{% url 'document_list' %}" class="search-form">
             <input type="text" name="q" placeholder="Ask a question about the documents..." 
-                   class="form-control search-input" value="{{ search_query }}">
+                   class="form-control search-input" value="{{ search_query }}" autofocus>
             <button type="submit" class="btn btn-primary search-btn">
                 <i class="fas fa-search me-2"></i>Search
             </button>
@@ -21,43 +22,84 @@
 
         <!-- Search Results -->
         {% if rag_results_by_doc %}
-            <h2 class="section-title mt-4">Semantic Search Results (RAG)</h2>
-            <p class="lead text-muted">Showing relevant passages for your query: "<strong>{{ search_query }}</strong>"</p>
+            <h2 class="section-title mt-4">
+                <i class="fas fa-brain me-2"></i>Semantic Search Results
+            </h2>
+            <p class="lead text-muted mb-4">
+                Showing relevant passages for: "<strong>{{ search_query }}</strong>"
+            </p>
             
             {% for doc_title, chunks in rag_results_by_doc.items %}
-                <div class="card result-card">
-                    <div class="card-header bg-primary text-white">
-                        <i class="fas fa-file-alt me-2"></i> Document: {{ doc_title }}
+                <div class="card result-card mb-4 shadow">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fas fa-file-alt me-2"></i> 
+                            <strong>{{ doc_title }}</strong>
+                        </span>
+                        {% if chunks.0.document_id %}
+                        <a href="{% url 'document_viewer' chunks.0.document_id %}?page={{ chunks.0.page }}" 
+                           class="btn btn-sm btn-light view-document-btn"
+                           title="Open document at page {{ chunks.0.page }}">
+                            <i class="fas fa-external-link-alt me-1"></i>
+                            View Document
+                        </a>
+                        {% endif %}
                     </div>
+                    
                     <ul class="list-group list-group-flush">
                         {% for chunk in chunks %}
                             <li class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <small class="text-secondary">
-                                        Page: <span class="badge bg-info text-dark me-2">{{ chunk.page }}</span>
-                                        Type: <span class="badge bg-light text-secondary me-2">{{ chunk.type }}</span>
-                                    </small>
-                                    <small class="text-danger" title="Semantic Distance (Closer to 0 is better)">
-                                        Distance: {{ chunk.distance|floatformat:4 }}
-                                    </small>
+                                <!-- Metadata Chunk -->
+                                <div class="chunk-metadata">
+                                    <span class="me-3">
+                                        <i class="fas fa-file-alt me-1 text-primary"></i>
+                                        <strong>Page:</strong> 
+                                        <a href="{% url 'document_viewer' chunk.document_id %}?page={{ chunk.page }}" 
+                                           class="badge bg-info text-white text-decoration-none"
+                                           title="Open at page {{ chunk.page }}">
+                                            {{ chunk.page }}
+                                        </a>
+                                    </span>
+                                    <span class="me-3">
+                                        <i class="fas fa-tag me-1 text-secondary"></i>
+                                        <strong>Type:</strong> 
+                                        <span class="badge bg-light text-secondary">{{ chunk.type }}</span>
+                                    </span>
+                                    <span class="distance-indicator">
+                                        <i class="fas fa-chart-line me-1"></i>
+                                        <strong>Relevance:</strong> 
+                                        {{ chunk.distance|format_distance }}
+                                    </span>
                                 </div>
 
-                                <div class="chunk-box">
-                                    {{ chunk.content }}
+                                <!-- Contenuto del Chunk Renderizzato -->
+                                <div class="chunk-content">
+                                    {{ chunk.content|render_rag_content:chunk.type }}
                                 </div>
                             </li>
                         {% endfor %}
                     </ul>
                 </div>
             {% endfor %}
+            
+            <!-- Info Box -->
+            <div class="alert alert-info mt-4">
+                <i class="fas fa-lightbulb me-2"></i>
+                <strong>Tip:</strong> Click on the page number or "View Document" button to open the PDF at the exact location of the result.
+            </div>
+            
         {% elif search_query %}
             <div class="alert alert-warning mt-4">
+                <i class="fas fa-exclamation-triangle me-2"></i>
                 Semantic search executed, but no relevant content was found for "<strong>{{ search_query }}</strong>".
+                <br>
+                <small class="mt-2 d-block">Try rephrasing your query or using different keywords.</small>
             </div>
         {% endif %}
 
         {% if rag_error %}
             <div class="alert alert-danger mt-4">
+                <i class="fas fa-exclamation-circle me-2"></i>
                 <strong>RAG Search Error:</strong> {{ rag_error }}
             </div>
         {% endif %}
@@ -66,46 +108,50 @@
 
         <!-- Document List -->
         {% if documents %}
-            <h2 class="section-title">Available Documents (Total: {{ documents.count }})</h2>
-            <p class="text-muted small">The list below shows documents processed and available for search.</p>
+            <h2 class="section-title">
+                <i class="fas fa-folder-open me-2"></i>Available Documents 
+                <span class="badge bg-primary">{{ documents.count }}</span>
+            </h2>
+            <p class="text-muted small mb-3">Documents processed and available for semantic search.</p>
 
             <div class="doc-list">
                 {% for doc in documents %}
                     <div class="doc-card shadow-sm">
                         <div class="doc-header">
-                            <strong>{{ doc.title }}</strong>
-                            <span class="text-muted small">Uploaded by: {{ doc.uploader.username }}</span>
-                        </div>
-                        <div class="doc-body">
-                            <div class="d-flex justify-content-between align-items-start">
+                            <div class="d-flex justify-content-between align-items-start w-100">
                                 <div>
-                                    <p class="mb-2">Processed:     
-                                        {% if doc.is_processed %}
-                                            <i class="fas fa-check-circle text-success me-1" title="Processed"></i>
-                                        {% else %}
-                                            <i class="fas fa-times-circle text-danger me-1" title="Not Processed"></i>
-                                         {% endif %}
-                                    </p>
-
-                                    {% if doc.uploader == user %}
-                                        {% if not doc.is_processed %}
-                                            <a href="{% url 'document_process' doc.pk %}" class="btn btn-outline-primary btn-sm">
-                                                <i class="fas fa-play me-1"></i>Process Document
-                                            </a>
-                                        {% else %}
-                                            <p class="mb-0"><strong>Output:</strong> {{ doc.processing_output|truncatechars:80 }}</p>
-                                        {% endif %}
-                                    {% endif %}
+                                    <strong class="d-block mb-1">{{ doc.title }}</strong>
+                                    <small class="text-muted">
+                                        <i class="fas fa-user me-1"></i>{{ doc.uploader.username }} • 
+                                        <i class="fas fa-calendar me-1"></i>{{ doc.uploaded_at|date:"M d, Y" }}
+                                    </small>
                                 </div>
-                                
-                                {% if doc.uploader == user and user.profile.is_uploader %}
-                                <div>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'document_viewer' doc.pk %}" 
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye me-1"></i>View
+                                    </a>
+                                    {% if doc.uploader == user and user.profile.is_uploader %}
                                     <a href="{% url 'document_delete' doc.pk %}" 
                                        class="btn btn-outline-danger btn-sm">
-                                        <i class="fas fa-trash-alt me-1"></i> Delete
+                                        <i class="fas fa-trash-alt me-1"></i>Delete
                                     </a>
+                                    {% endif %}
                                 </div>
-                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="doc-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="badge {% if doc.document_type == 'scanned' %}bg-info{% else %}bg-secondary{% endif %} me-2">
+                                        {{ doc.get_document_type_display }}
+                                    </span>
+                                    {% if doc.is_processed %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Processed
+                                        </span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -113,11 +159,13 @@
             </div>
         {% else %}
             <div class="alert alert-info mt-3">
-                No documents found matching your criteria, or no documents have been uploaded yet.
+                <i class="fas fa-info-circle me-2"></i>
+                No documents found. Upload some documents to start searching!
             </div>
         {% endif %}
     {% else %}
         <div class="alert alert-danger mt-4">
+            <i class="fas fa-lock me-2"></i>
             You do not have permission to view this content.
         </div>
     {% endif %}
