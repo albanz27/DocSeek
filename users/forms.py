@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Profile 
+from django.core.exceptions import ValidationError
+
 
 class UserRegistrationForm(UserCreationForm):
     is_uploader = forms.BooleanField(required=False, label='Can Upload & Process Documents (Uploader Role)')
@@ -16,6 +18,22 @@ class UserRegistrationForm(UserCreationForm):
         for field_name, field in self.fields.items():
             if field_name not in ['is_uploader', 'is_searcher']:
                 field.widget.attrs['class'] = 'form-control'
+
+    def clean(self):
+        """
+        Validazione personalizzata per assicurarsi che almeno un ruolo sia selezionato.
+        """
+        cleaned_data = super().clean()
+        is_uploader = cleaned_data.get('is_uploader')
+        is_searcher = cleaned_data.get('is_searcher')
+        
+        # Verifica che almeno uno dei due ruoli sia True
+        if not is_uploader and not is_searcher:
+            raise ValidationError(
+                "You must select at least one role (Uploader or Searcher) to register."
+            )
+        
+        return cleaned_data
 
     def save(self, commit=True):
         user = super().save(commit=False)
