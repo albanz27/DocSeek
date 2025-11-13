@@ -1,114 +1,243 @@
-/* --------------------  LAYOUT BASE  -------------------- */
+/* --------------------  GENERAL STYLES  -------------------- */
 body {
-    background-color: #f8f9fa;
+    background-color: #f5f7fa;
 }
 
+.process-container {
+    padding: 0.5rem 1rem 2rem;
+}
+
+/* --------------------  CARD  -------------------- */
 .card {
     background-color: #ffffff;
     border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* --------------------  ALERT INFO  -------------------- */
-.alert-light {
-    background-color: #f9fafc;
-    border-color: #e5e8ef;
-    color: #495057;
+/* --------------------  PAGE ICON  -------------------- */
+.page-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
-.alert a {
-    color: #4a54e1;
+
+.card-title {
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+/* --------------------  DOCUMENT INFO  -------------------- */
+.document-info {
+    background: linear-gradient(to right, #f8f9fa 0%, #ffffff 100%);
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+}
+
+.document-info:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+}
+
+.info-header {
+    display: flex;
+    align-items: center;
+    font-size: 1.1rem;
+    color: #2c3e50;
+    margin-bottom: 0.75rem;
+}
+
+.info-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.info-item {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #6c757d;
     text-decoration: none;
 }
-.alert a:hover {
-    text-decoration: underline;
-}
 
-/* --------------------  FORM ELEMENTS  -------------------- */
-input[type="text"],
-input[type="password"],
-textarea {
-    border-radius: 0.5rem;
-    border: 1px solid #ced4da;
-    padding: 0.6rem 0.75rem;
-    width: 100%;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-input:focus,
-textarea:focus {
-    border-color: #4a54e1;
-    box-shadow: 0 0 0 3px rgba(74, 84, 225, 0.15);
-    outline: none;
-}
-
-/* --------------------  CHECKBOX  -------------------- */
-.form-check {
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    transition: box-shadow 0.2s ease;
-}
-.form-check:hover {
-    box-shadow: 0 0 0 2px rgba(74, 84, 225, 0.1);
-}
-
-/* --------------------  BUTTON  -------------------- */
-.btn-primary {
-    background-color: #4a54e1;
-    border: none;
-    font-weight: 600;
-    border-radius: 0.6rem;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-}
-.btn-primary:hover {
-    background-color: #3e48cc;
-    transform: translateY(-2px);
-}
-
-/* --------------------  LINK DI RITORNO  -------------------- */
-.text-secondary:hover {
+.info-item.text-primary {
     color: #4a54e1 !important;
+    font-weight: 600;
+}
+
+.info-item.text-primary:hover {
     text-decoration: underline;
 }
 
-/* --------------------  TIPOGRAFIA  -------------------- */
-h2 {
+/* --------------------  FORM SECTIONS  -------------------- */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.section-title {
+    font-size: 1.05rem;
     font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #f1f3f5;
 }
-h5 {
-    font-weight: 500;
+
+/* --------------------  CHECKBOX BOX  -------------------- */
+.checkbox-box {
+    background-color: #f0fdf4;
+    border: 2px solid #d1fae5;
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
 }
-small {
+
+.checkbox-box:hover {
+    border-color: #10b981;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+}
+
+.form-check {
+    margin-bottom: 0.5rem;
+}
+
+.form-check-input {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.1rem;
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: #10b981;
+    border-color: #10b981;
+}
+
+.form-check-label {
+    cursor: pointer;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+
+.form-text {
     font-size: 0.85rem;
+    color: #6c757d;
+    margin-left: 2rem;
 }
 
-/* --------------------  PROCESSING OUTPUT FIELD  -------------------- */
-.output-field textarea {
-    min-height: 150px;
-    width: 100%;
-    border-radius: 0.75rem;
-    border: 1px solid #d4d7de;
-    background-color: #fbfcff;
-    padding: 0.9rem 1rem;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+/* --------------------  FORM LABEL & TEXTAREA  -------------------- */
+.form-label {
+    font-weight: 600;
+    color: #2c3e50;
     font-size: 0.95rem;
-    line-height: 1.5;
-    color: #333;
-    resize: vertical;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    margin-bottom: 0.5rem;
 }
 
-.output-field textarea:focus {
-    border-color: #4a54e1;
-    background-color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(74, 84, 225, 0.15);
+textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 1rem;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    color: #2c3e50;
+    background-color: #f8f9fa;
+    resize: vertical;
+    transition: all 0.3s ease;
+}
+
+textarea:focus {
+    border-color: #667eea;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
     outline: none;
 }
 
-/* Placeholder styling */
-.output-field textarea::placeholder {
+textarea::placeholder {
     color: #adb5bd;
     font-style: italic;
 }
 
-/* Error handling (coerente con Bootstrap) */
-.invalid-feedback {
-    font-size: 0.85rem;
+/* --------------------  BUTTONS  -------------------- */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    font-weight: 700;
+    font-size: 1.05rem;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* --------------------  BACK LINK  -------------------- */
+.back-link {
+    color: #6c757d;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+}
+
+.back-link:hover {
+    color: #667eea;
+}
+
+/* --------------------  ALERTS  -------------------- */
+.alert {
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+.alert-danger {
+    background-color: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+}
+
+/* --------------------  RESPONSIVE  -------------------- */
+@media (max-width: 768px) {
+    .process-container {
+        padding: 1.5rem 1rem;
+    }
+    
+    .card {
+        margin-top: 2rem !important;
+    }
+    
+    .page-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.75rem;
+    }
+    
+    .card-title {
+        font-size: 1.5rem;
+    }
+    
+    .info-details {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
 }

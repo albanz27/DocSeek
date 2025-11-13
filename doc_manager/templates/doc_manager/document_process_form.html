@@ -2,69 +2,109 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/document_process.css' %}">
+<link rel="stylesheet" href="{% static 'css/doc_manager/document_process_form.css' %}">
 {% endblock extra_css %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-6">
-        <div class="card shadow p-4 mt-5 border-0 rounded-4">
-            <h2 class="card-title text-center text-primary mb-3 fw-bold">
-                Process Document
-            </h2>
-            <h5 class="text-center text-muted mb-4">{{ document.title }}</h5>
+<div class="process-container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg p-4 mt-5 border-0 rounded-4">
+                <div class="text-center mb-4">
+                    <div class="page-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h2 class="card-title text-primary fw-bold">
+                        Process Document
+                    </h2>
+                    <p class="text-muted">Configure processing settings</p>
+                </div>
 
-            <div class="alert alert-light border rounded small mb-4">
-                <i class="fas fa-info-circle text-primary me-1"></i>
-                Uploaded: <strong>{{ document.uploaded_at|date:"Y-m-d H:i" }}</strong> &nbsp; | &nbsp;
-                By: <strong>{{ document.uploader.username }}</strong>
-                <a href="{{ document.file.url }}" class="alert-link ms-3">
-                    <i class="fas fa-download me-1"></i> Download
-                </a>
-            </div>
-
-            <form method="POST" class="mb-3">
-                {% csrf_token %}
-
-                <p class="text-muted small mb-3">
-                    Enable <strong>RAG processing</strong> (chunking and embeddings) by checking the box below.
-                </p>
-
-                <div class="form-check p-3 border rounded-3 mb-4">
-                    {{ form.is_processed }}
-                    <label class="form-check-label fw-semibold text-success ms-2" for="{{ form.is_processed.id_for_label }}">
-                        Start RAG Processing
-                    </label>
-                    <div class="form-text">
-                        The document will be queued for processing with Celery.
+                <!-- Document Info -->
+                <div class="document-info">
+                    <div class="info-header">
+                        <i class="fas fa-file-pdf text-danger me-2"></i>
+                        <strong>{{ document.title }}</strong>
+                    </div>
+                    <div class="info-details">
+                        <span class="info-item">
+                            <i class="fas fa-calendar text-muted me-1"></i>
+                            {{ document.uploaded_at|date:"M d, Y H:i" }}
+                        </span>
+                        <span class="info-item">
+                            <i class="fas fa-user text-muted me-1"></i>
+                            {{ document.uploader.username }}
+                        </span>
+                        <a href="{{ document.file.url }}" class="info-item text-primary">
+                            <i class="fas fa-download me-1"></i>
+                            Download
+                        </a>
                     </div>
                 </div>
 
-                <div class="mb-4">
-                    <label for="{{ form.processing_output.id_for_label }}" class="form-label fw-semibold">
-                        Processing Output / Notes
-                    </label>
+                <hr class="my-4">
 
-                    <div class="output-field">
+                <form method="POST">
+                    {% csrf_token %}
+
+                    <!-- RAG Processing Section -->
+                    <div class="form-group mb-4">
+                        <h6 class="section-title">
+                            <i class="fas fa-brain text-primary me-2"></i>
+                            RAG Processing
+                        </h6>
+
+                        <div class="checkbox-box">
+                            <div class="form-check">
+                                {{ form.is_processed }}
+                                <label class="form-check-label fw-semibold" for="{{ form.is_processed.id_for_label }}">
+                                    <i class="fas fa-rocket me-1"></i>
+                                    Start RAG Processing
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                The document will be queued for processing with Celery
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Processing Output Section -->
+                    <div class="form-group mb-4">
+                        <h6 class="section-title">
+                            <i class="fas fa-file-alt text-primary me-2"></i>
+                            Processing Notes
+                        </h6>
+                        
+                        <label for="{{ form.processing_output.id_for_label }}" class="form-label fw-semibold">
+                            Add notes or logs about the processing
+                        </label>
+
                         {{ form.processing_output }}
+
+                        {% for error in form.processing_output.errors %}
+                            <div class="alert alert-danger mt-2 py-2">
+                                <i class="fas fa-exclamation-circle me-1"></i>
+                                {{ error }}
+                            </div>
+                        {% endfor %}
                     </div>
 
-                    {% for error in form.processing_output.errors %}
-                        <div class="invalid-feedback d-block">{{ error }}</div>
-                    {% endfor %}
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary w-100 py-2">
+                        <i class="fas fa-play-circle me-2"></i> 
+                        Finalize Processing
+                    </button>
+                </form>
+
+                <hr class="mt-4">
+                
+                <!-- Back Link -->
+                <div class="text-center">
+                    <a href="{% url 'uploader_dashboard' %}" class="back-link">
+                        <i class="fas fa-arrow-left me-1"></i>
+                        Back to Dashboard
+                    </a>
                 </div>
-
-
-                <button type="submit" class="btn btn-primary w-100 py-2">
-                    <i class="fas fa-play-circle me-2"></i> Finalize Processing
-                </button>
-            </form>
-
-            <hr>
-            <div class="text-center">
-                <a href="{% url 'uploader_dashboard' %}" class="small text-decoration-none text-secondary">
-                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
-                </a>
             </div>
         </div>
     </div>
