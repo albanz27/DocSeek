@@ -16,34 +16,37 @@
     
     <!-- Processed Documents -->
     <div class="col-md-4">
-      <div class="stat-card bg-white text-center border-start border-4 border-success shadow-sm p-3">
-        <h5 class="text-muted mb-2 fw-semibold">
-          <i class="fas fa-check-circle me-1"></i> Processed Documents
-        </h5>
-        <p class="display-4 fw-bold text-success mb-1">{{ processed_count }}</p>
-        <small class="text-secondary">Ready for Semantic Search</small>
+      <div class="stat-card stat-success">
+        <div class="stat-icon-wrapper">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <h5 class="stat-title">Processed Documents</h5>
+        <p class="stat-number">{{ processed_count }}</p>
+        <small class="stat-subtitle">Ready for Semantic Search</small>
       </div>
     </div>
 
     <!-- OCR Processing -->
     <div class="col-md-4">
-      <div class="stat-card bg-white text-center border-start border-4 border-info shadow-sm p-3">
-        <h5 class="text-muted mb-2 fw-semibold">
-          <i class="fas fa-microchip me-1"></i> OCR in Progress
-        </h5>
-        <p class="display-4 fw-bold text-info mb-1">{{ ocr_processing_count }}</p>
-        <small class="text-secondary">Processing on GPU Server</small>
+      <div class="stat-card stat-info">
+        <div class="stat-icon-wrapper">
+          <i class="fas fa-microchip"></i>
+        </div>
+        <h5 class="stat-title">OCR in Progress</h5>
+        <p class="stat-number">{{ ocr_processing_count }}</p>
+        <small class="stat-subtitle">Processing on GPU Server</small>
       </div>
     </div>
     
     <!-- Pending Processing -->
     <div class="col-md-4">
-      <div class="stat-card bg-white text-center border-start border-4 border-warning shadow-sm p-3">
-        <h5 class="text-muted mb-2 fw-semibold">
-          <i class="fas fa-clock me-1"></i> Awaiting Action
-        </h5>
-        <p class="display-4 fw-bold text-warning mb-1">{{ pending_documents.count }}</p>
-        <small class="text-secondary">Requires Processing</small>
+      <div class="stat-card stat-warning">
+        <div class="stat-icon-wrapper">
+          <i class="fas fa-clock"></i>
+        </div>
+        <h5 class="stat-title">Awaiting Action</h5>
+        <p class="stat-number">{{ pending_documents.count }}</p>
+        <small class="stat-subtitle">Requires Processing</small>
       </div>
     </div>
 
@@ -63,8 +66,8 @@
   {% if pending_documents %}
     <ul class="list-group shadow-sm rounded-3 mb-4">
       {% for doc in pending_documents %}
-        <li class="list-group-item d-flex justify-content-between align-items-start">
-          <div class="flex-grow-1">
+        <li class="list-group-item">
+          <div class="document-content">
             <div class="d-flex align-items-center mb-2">
               <strong class="me-2">{{ doc.title }}</strong>
               
@@ -101,32 +104,32 @@
             
             <!-- Processing Status -->
             {% if doc.processing_state == 'ocr_processing' or doc.processing_state == 'ocr_queued' %}
-              <div class="document-status text-info">
-                <span class="status-icon ocr"></span>
+              <div class="document-status status-info">
+                <span class="status-dot"></span>
                 <strong>Status:</strong> OCR processing on GPU server...
                 {% if doc.processing_output %}
                   <br><small class="ms-4">{{ doc.processing_output }}</small>
                 {% endif %}
               </div>
             {% elif doc.processing_state == 'rag_processing' %}
-              <div class="document-status text-warning">
-                <span class="status-icon processing"></span>
+              <div class="document-status status-warning">
+                <span class="status-dot"></span>
                 <strong>Status:</strong> Creating embeddings for semantic search...
               </div>
             {% elif doc.processing_state == 'ocr_completed' %}
-              <div class="document-status text-success">
-                <span class="status-icon completed"></span>
+              <div class="document-status status-success">
+                <i class="fas fa-check-circle me-1"></i>
                 <strong>Status:</strong> OCR completed. Ready for indexing.
               </div>
             {% elif doc.processing_state == 'ocr_failed' %}
-              <div class="document-status text-danger">
+              <div class="document-status status-danger">
                 <i class="fas fa-exclamation-triangle me-1"></i>
                 <strong>Error:</strong> {{ doc.ocr_error|default:"OCR processing failed" }}
               </div>
             {% endif %}
           </div>
           
-          <div class="ms-3 d-flex gap-2">
+          <div class="document-actions">
             {% if doc.processing_state == 'pending' or doc.processing_state == 'ocr_failed' %}
               <a href="{% url 'document_process' doc.pk %}" 
                  class="btn btn-success btn-sm rounded-pill">
@@ -196,8 +199,8 @@
 
   <ul class="list-group shadow-sm rounded-3">
     {% for doc in processed_documents %}
-      <li class="list-group-item d-flex justify-content-between align-items-start">
-        <div class="flex-grow-1">
+      <li class="list-group-item">
+        <div class="document-content">
           <div class="d-flex align-items-center mb-2">
             <strong class="me-2">{{ doc.title }}</strong>
             
@@ -228,7 +231,7 @@
           {% endif %}
         </div>
         
-        <div class="ms-3 d-flex gap-2">
+        <div class="document-actions">
           <!-- Rename Button -->
           <a href="{% url 'document_rename' doc.pk %}"
             class="btn btn-outline-primary btn-sm rounded-pill"
