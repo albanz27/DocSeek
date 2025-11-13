@@ -15,7 +15,7 @@ from .mixins import SearcherRequiredMixin, UploaderRequiredMixin
 from .tasks import index_document_rag, process_scanned_document
 from .rag_pipeline.embedding import init_chromadb, delete_document_embeddings, add_chunks_to_db
 from .rag_pipeline.search import run_queries
-from .forms import DocumentUploadForm
+from .forms import DocumentUploadForm, DocumentRenameForm
 from itertools import groupby
 from operator import itemgetter
 
@@ -140,9 +140,47 @@ class DocumentProcessView(UpdateView):
         doc_instance.save()
         return redirect(self.success_url)
     
+
+# View per rinominare un documento
+class DocumentRenameView(UploaderRequiredMixin, UpdateView):
+    model = Document
+    form_class = DocumentRenameForm
+    template_name = 'doc_manager/document_rename.html'
+    success_url = reverse_lazy('uploader_dashboard')
+    
+    def get_object(self, queryset=None):
+        doc = super().get_object(queryset)
+        
+        if doc.uploader != self.request.user:
+            raise Http404("You are not authorized to rename this document.")
+            
+        return doc
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['document_id'] = self.object.pk
+        return kwargs
+    
+    def form_valid(self, form):
+        old_title = self.object.title
+        response = super().form_valid(form)
+        new_title = self.object.title
+        
+        messages.success(
+            self.request,
+            f'Document renamed successfully from "{old_title}" to "{new_title}".'
+        )
+        
+        return response
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['old_title'] = self.object.title
+        return context
+
+
 # View per l'eliminazione del documento
 class DocumentDeleteView(DeleteView):
-    """View per eliminare documenti - solo l'uploader può eliminare i propri documenti"""
     model = Document
     template_name = 'doc_manager/document_confirm_delete.html'
     success_url = reverse_lazy('uploader_dashboard')
@@ -215,10 +253,6 @@ class UploaderDashboardView(UploaderRequiredMixin, ListView):
 
 # View per visualizzare il documento PDF con PDF.js
 class DocumentViewerView(LoginRequiredMixin, DetailView):
-    """
-    View per visualizzare un documento PDF con PDF.js integrato.
-    Supporta l'apertura diretta a una pagina specifica tramite parametro ?page=N
-    """
     model = Document
     template_name = 'doc_manager/document_viewer.html'
     context_object_name = 'document'

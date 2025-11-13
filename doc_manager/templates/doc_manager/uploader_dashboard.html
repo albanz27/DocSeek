@@ -143,6 +143,13 @@
               </button>
             {% endif %}
             
+            <!-- Rename Button -->
+            <a href="{% url 'document_rename' doc.pk %}" 
+               class="btn btn-outline-primary btn-sm rounded-pill"
+               title="Rename document">
+              <i class="fas fa-edit"></i>
+            </a>
+            
             <!-- Delete Button -->
             <a href="{% url 'document_delete' doc.pk %}" 
                class="btn btn-outline-danger btn-sm rounded-pill">
@@ -221,7 +228,15 @@
           {% endif %}
         </div>
         
-        <div class="ms-3">
+        <div class="ms-3 d-flex gap-2">
+          <!-- Rename Button -->
+          <a href="{% url 'document_rename' doc.pk %}"
+            class="btn btn-outline-primary btn-sm rounded-pill"
+            title="Rename document">
+            <i class="fas fa-edit me-1"></i> Rename
+          </a>
+          
+          <!-- Delete Button -->
           <a href="{% url 'document_delete' doc.pk %}"
             class="btn btn-outline-danger btn-sm rounded-pill">
             <i class="fas fa-trash-alt me-1"></i> Delete
@@ -244,6 +259,9 @@
     <p class="mb-2 small">
       <strong>Scanned PDFs:</strong> Requires OCR on GPU server (~1-3 minutes per page). 
       Uses DeepSeek-VL AI model to extract text from images.
+    </p>
+    <p class="mb-2 small">
+      <strong>Renaming:</strong> You can rename any document at any time. This only changes the title in the system, not the actual file name.
     </p>
     <p class="mb-0 small">
       <strong>Deletion:</strong> You can delete any document at any time. Processed documents will also be removed from the search index.
