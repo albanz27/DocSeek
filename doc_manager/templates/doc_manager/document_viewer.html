@@ -45,42 +45,5 @@
                 allowfullscreen>
         </iframe>
     </div>
-    
-    <div class="viewer-toolbar">
-        <div class="page-controls">
-            <button class="btn btn-outline-secondary btn-sm btn-viewer" onclick="previousPage()">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <span class="page-info" id="page-info">Page {{ initial_page }}</span>
-            <button class="btn btn-outline-secondary btn-sm btn-viewer" onclick="nextPage()">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
-        
-        <div class="zoom-controls">
-            <button class="btn btn-outline-secondary btn-sm btn-viewer" onclick="zoomOut()">
-                <i class="fas fa-search-minus"></i>
-            </button>
-            <button class="btn btn-outline-secondary btn-sm btn-viewer" onclick="zoomIn()">
-                <i class="fas fa-search-plus"></i>
-            </button>
-            <button class="btn btn-outline-secondary btn-sm btn-viewer" onclick="fitToPage()">
-                <i class="fas fa-expand"></i>
-            </button>
-        </div>
-        
-        <div>
-            <a href="{% url 'serve_document' document.pk %}" 
-               class="btn btn-primary btn-sm btn-viewer"
-               download="{{ document.title }}">
-                <i class="fas fa-download me-2"></i>Download PDF
-            </a>
-        </div>
-    </div>
-</div>
 
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static 'js/doc_manager/document_viewer.js' %}"></script>
 {% endblock %}
