@@ -1,13 +1,27 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Profile 
 from django.core.exceptions import ValidationError
 
-
 class UserRegistrationForm(UserCreationForm):
-    is_uploader = forms.BooleanField(required=False, label='Can Upload & Process Documents (Uploader Role)')
-    is_searcher = forms.BooleanField(required=False, label='Can Search & View Documents (Searcher Role)')
+    email = forms.EmailField(
+        required=True,
+        label='Email Address',
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'your.email@example.com'
+        }),
+        help_text='Required. Enter a valid email address.'
+    )
+    
+    is_uploader = forms.BooleanField(
+        required=False, 
+        label='Can Upload & Process Documents (Uploader Role)'
+    )
+    is_searcher = forms.BooleanField(
+        required=False, 
+        label='Can Search & View Documents (Searcher Role)'
+    )
 
     class Meta(UserCreationForm.Meta):
         model = User
@@ -27,7 +41,6 @@ class UserRegistrationForm(UserCreationForm):
         is_uploader = cleaned_data.get('is_uploader')
         is_searcher = cleaned_data.get('is_searcher')
         
-        # Verifica che almeno uno dei due ruoli sia True
         if not is_uploader and not is_searcher:
             raise ValidationError(
                 "You must select at least one role (Uploader or Searcher) to register."
@@ -37,10 +50,10 @@ class UserRegistrationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.email = self.cleaned_data.get('email')
+        user.email = self.cleaned_data.get('email').lower()
+        
         if commit:
             user.save()
-            
             profile = user.profile
             profile.is_uploader = self.cleaned_data.get('is_uploader')
             profile.is_searcher = self.cleaned_data.get('is_searcher')
