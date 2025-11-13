@@ -7,21 +7,13 @@ class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
         label='Email Address',
-        widget=forms.EmailInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'your.email@example.com'
-        }),
+        widget=forms.EmailInput(attrs={'class': 'form-control'}),
         help_text='Required. Enter a valid email address.'
     )
     
-    is_uploader = forms.BooleanField(
-        required=False, 
-        label='Can Upload & Process Documents (Uploader Role)'
-    )
-    is_searcher = forms.BooleanField(
-        required=False, 
-        label='Can Search & View Documents (Searcher Role)'
-    )
+    is_uploader = forms.BooleanField(required=False, label='Can Upload & Process Documents (Uploader Role)')
+
+    is_searcher = forms.BooleanField(required=False, label='Can Search & View Documents (Searcher Role)')
 
     class Meta(UserCreationForm.Meta):
         model = User
