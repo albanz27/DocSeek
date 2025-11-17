@@ -1,6 +1,8 @@
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling.datamodel.pipeline_options import PdfPipelineOptions
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+import re
+from typing import List, Dict, Any
 
 MAX_TEXT_CHUNK_SIZE = 500
 CHUNK_OVERLAP_SIZE = 50 
@@ -112,67 +114,225 @@ def create_chunks(doc):
     flush_text_buffer(text_buffer, current_page, all_chunks)
     return all_chunks
 
+
 def create_chunks_scannedpdf(text, title, chunk_size=MAX_TEXT_CHUNK_SIZE, overlap=CHUNK_OVERLAP_SIZE):
     """
-    Crea chunks da testo puro per documenti OCR.
+    Crea chunks da testo OCR
     """
     chunks = []
-    text_length = len(text)
-    start = 0
-    chunk_num = 0
     
-    if "=" * 60 in text and "PAGINA" in text:
-        pages = text.split("=" * 60)
-        for page_idx, page_content in enumerate(pages):
-            if not page_content.strip():
-                continue
+    heading_pattern = re.compile(r'^#+\s+(.+)$', re.MULTILINE)
+    page_separator_pattern = re.compile(r'={60}\nPAGINA\s+(\d+)\n={60}')
+    pages = _split_by_pages(text, page_separator_pattern)
+    
+    for page_num, page_content in pages.items():
+        table_ranges = _find_tables(page_content)
+        
+        # Processa contenuto della pagina
+        last_pos = 0
+        current_heading = None
+        
+        for table_start, table_end, table_content in table_ranges:
+            if last_pos < table_start:
+                text_section = page_content[last_pos:table_start].strip()
+                if text_section:
+                    heading_match = heading_pattern.search(text_section)
+                    if heading_match:
+                        current_heading = heading_match.group(1)
+                    
+                    # Pulisci Markdown dal testo
+                    cleaned_text = _clean_markdown(text_section)
+                    
+                    if len(cleaned_text) <= chunk_size:
+                        chunks.append({
+                            "content": cleaned_text,
+                            "metadata": {
+                                "page": page_num,
+                                "type": "text",
+                                "chunk_type": "text",
+                                "source_title": title,
+                                "heading": current_heading
+                            }
+                        })
+                    else:
+                        text_chunks = _split_long_text(cleaned_text, chunk_size, overlap)
+                        for i, chunk_text in enumerate(text_chunks):
+                            chunks.append({
+                                "content": chunk_text,
+                                "metadata": {
+                                    "page": page_num,
+                                    "type": "text",
+                                    "chunk_type": "text",
+                                    "source_title": title,
+                                    "heading": current_heading,
+                                    "chunk_index": i,
+                                    "is_continuation": i > 0
+                                }
+                            })
             
-            page_num = page_idx
-            if "PAGINA" in page_content:
-                try:
-                    page_num = int(page_content.split("PAGINA")[1].split()[0])
-                except:
-                    page_num = page_idx
+            chunks.append({
+                "content": table_content,
+                "metadata": {
+                    "page": page_num,
+                    "type": "table",
+                    "chunk_type": "table",
+                    "source_title": title,
+                    "context_heading": current_heading
+                }
+            })
             
-            page_text = page_content.strip()
-            page_start = 0
-            
-            while page_start < len(page_text):
-                end = page_start + chunk_size
-                chunk_text = page_text[page_start:end]
+            last_pos = table_end
+        
+        if last_pos < len(page_content):
+            remaining_text = page_content[last_pos:].strip()
+            if remaining_text:
+                heading_match = heading_pattern.search(remaining_text)
+                if heading_match:
+                    current_heading = heading_match.group(1)
                 
-                if chunk_text.strip():
+                cleaned_text = _clean_markdown(remaining_text)
+                
+                if len(cleaned_text) <= chunk_size:
                     chunks.append({
-                        "content": chunk_text,
+                        "content": cleaned_text,
                         "metadata": {
                             "page": page_num,
-                            "type": "ocr_text",
-                            "source_title": title
+                            "type": "text",
+                            "chunk_type": "text",
+                            "source_title": title,
+                            "heading": current_heading
                         }
                     })
-                
-                page_start = end - overlap
-                
-    else:
-        while start < text_length:
-            end = start + chunk_size
-            chunk_text = text[start:end]
-            
-            if chunk_text.strip():
-                chunks.append({
-                    "content": chunk_text,
-                    "metadata": {
-                        "page": chunk_num // 10 + 1,  
-                        "type": "ocr_text",
-                        "source_title": title
-                    }
-                })
-            
-            start = end - overlap
-            chunk_num += 1
+                else:
+                    text_chunks = _split_long_text(cleaned_text, chunk_size, overlap)
+                    for i, chunk_text in enumerate(text_chunks):
+                        chunks.append({
+                            "content": chunk_text,
+                            "metadata": {
+                                "page": page_num,
+                                "type": "text",
+                                "chunk_type": "text",
+                                "source_title": title,
+                                "heading": current_heading,
+                                "chunk_index": i,
+                                "is_continuation": i > 0
+                            }
+                        })
     
-    print(f"[RAG] Creati {len(chunks)} chunks da testo OCR")
+    text_chunks = sum(1 for c in chunks if c['metadata']['type'] == 'text')
+    
     return chunks
+
+
+def _split_by_pages(text: str, page_pattern) -> Dict[int, str]:
+    """Divide il testo per pagine"""
+    pages = {}
+    matches = list(page_pattern.finditer(text))
+    
+    if not matches:
+        return {1: text}
+    
+    for i, match in enumerate(matches):
+        page_num = int(match.group(1))
+        start = match.end()
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
+        page_content = text[start:end].strip()
+        pages[page_num] = page_content
+    
+    return pages
+
+
+def _find_tables(text: str) -> List[tuple]:
+    """Trova tutte le tabelle nel testo e ritorna (start, end, content)"""
+    tables = []
+    lines = text.split('\n')
+    
+    in_table = False
+    table_start_line = 0
+    table_lines = []
+    
+    for i, line in enumerate(lines):
+        if '|' in line:
+            if not in_table:
+                in_table = True
+                table_start_line = i
+                table_lines = [line]
+            else:
+                table_lines.append(line)
+        else:
+            if in_table:
+                table_content = '\n'.join(table_lines)
+                start_pos = sum(len(l) + 1 for l in lines[:table_start_line])
+                end_pos = start_pos + len(table_content)
+                tables.append((start_pos, end_pos, table_content))
+                
+                in_table = False
+                table_lines = []
+    
+    if in_table and table_lines:
+        table_content = '\n'.join(table_lines)
+        start_pos = sum(len(l) + 1 for l in lines[:table_start_line])
+        end_pos = start_pos + len(table_content)
+        tables.append((start_pos, end_pos, table_content))
+    
+    return tables
+
+
+def _clean_markdown(text: str) -> str:
+    """Rimuove formattazione Markdown dal testo"""
+    text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE) 
+    text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
+    text = re.sub(r'__(.+?)__', r'\1', text)  
+    text = re.sub(r'\*(.+?)\*', r'\1', text)
+    text = re.sub(r'_(.+?)_', r'\1', text)
+    text = re.sub(r'`(.+?)`', r'\1', text)  
+    text = re.sub(r'\[(.+?)\]\(.+?\)', r'\1', text) 
+    text = re.sub(r'!\[.*?\]\(.+?\)', '', text)
+    text = re.sub(r'```[\s\S]*?```', '', text)
+    text = re.sub(r'^[\-_\*]{3,}$', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^>\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^[\-\*\+]\s+', '', text, flags=re.MULTILINE)
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    text = re.sub(r' {2,}', ' ', text)
+    
+    return text.strip()
+
+
+def _split_long_text(text: str, chunk_size: int, overlap: int) -> List[str]:
+    """Divide testo lungo in chunk con overlap intelligente"""
+    chunks = []
+    start = 0
+    text_length = len(text)
+    
+    while start < text_length:
+        end = start + chunk_size
+        
+        if end < text_length:
+            separators = ['\n\n', '\n', '. ', '。', '! ', '? ', ' ']
+            search_start = max(start + chunk_size - 100, start)
+            search_end = min(end + 100, text_length)
+            search_text = text[search_start:search_end]
+            
+            best_split = None
+            for separator in separators:
+                relative_pos = search_text.rfind(separator)
+                if relative_pos != -1:
+                    absolute_pos = search_start + relative_pos + len(separator)
+                    if start < absolute_pos <= end + 100:
+                        best_split = absolute_pos
+                        break
+            
+            if best_split:
+                end = best_split
+        
+        chunk = text[start:end].strip()
+        if chunk:
+            chunks.append(chunk)
+        
+        start = end - overlap
+    
+    return chunks
+
 
 def convert_pdf_to_doc(filename: str):
     """
