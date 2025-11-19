@@ -23,7 +23,7 @@ DocSeek is an intelligent document management system with RAG (Retrieval-Augment
 - **Document Processing**: Docling
 - **Frontend**: Bootstrap 5, HTML/CSS , JS
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 
