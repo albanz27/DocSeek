@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Document(models.Model):
-    # Tipi di documento
     DOCUMENT_TYPES = [
         ('native', 'Native PDF'),
         ('scanned', 'Scanned PDF'),

@@ -93,46 +93,47 @@ body {
     border-bottom: 2px solid #f1f3f5;
 }
 
-/* --------------------  CHECKBOX BOX  -------------------- */
-.checkbox-box {
-    background-color: #f0fdf4;
-    border: 2px solid #d1fae5;
+/* --------------------  INFO BOX (sostituisce checkbox-box)  -------------------- */
+.info-box {
+    background-color: #e8f4ff;
+    border: 2px solid #b3d9ff;
+    border-left: 4px solid #667eea;
     border-radius: 12px;
     padding: 1.25rem;
     transition: all 0.3s ease;
 }
 
-.checkbox-box:hover {
-    border-color: #10b981;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
+.info-box:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
 }
 
-.form-check {
-    margin-bottom: 0.5rem;
-}
-
-.form-check-input {
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-top: 0.1rem;
-    cursor: pointer;
-}
-
-.form-check-input:checked {
-    background-color: #10b981;
-    border-color: #10b981;
-}
-
-.form-check-label {
-    cursor: pointer;
+.info-box p {
     color: #2c3e50;
-    font-size: 1rem;
+    margin-bottom: 0.75rem;
 }
 
-.form-text {
-    font-size: 0.85rem;
-    color: #6c757d;
-    margin-left: 2rem;
+.info-box ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.info-box li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    color: #495057;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.info-box li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #667eea;
+    font-weight: bold;
+    font-size: 1.1rem;
 }
 
 /* --------------------  FORM LABEL & TEXTAREA  -------------------- */
@@ -239,5 +240,9 @@ textarea::placeholder {
     .info-details {
         flex-direction: column;
         gap: 0.5rem;
+    }
+    
+    .info-box li {
+        font-size: 0.9rem;
     }
 }

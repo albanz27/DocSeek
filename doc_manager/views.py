@@ -93,9 +93,9 @@ class DocumentListView(SearcherRequiredMixin, ListView):
 # View per il processamento del documento
 class DocumentProcessView(UpdateView):
     model = Document 
-    fields = ['is_processed', 'processing_output'] 
+    fields = ['processing_output']  # Rimosso 'is_processed' dal form
     template_name = 'doc_manager/document_process_form.html'
-    success_url = reverse_lazy('document_list') 
+    success_url = reverse_lazy('uploader_dashboard')  # Reindirizza alla dashboard dopo il processing
     
     def get_object(self, queryset=None):
         doc = super().get_object(queryset)
@@ -113,9 +113,12 @@ class DocumentProcessView(UpdateView):
     def form_valid(self, form):
         doc_instance = form.save(commit=False)
         
-        if form.cleaned_data.get('is_processed') and not Document.objects.get(pk=doc_instance.pk).is_processed:
+        # Avvia SEMPRE il processing quando il form viene inviato
+        # (a meno che il documento non sia già processato)
+        if not Document.objects.get(pk=doc_instance.pk).is_processed:
             
             if doc_instance.document_type == 'scanned':
+                # Processing per PDF scansionati (con OCR)
                 process_scanned_document.delay(doc_instance.pk)
                 doc_instance.processing_state = 'ocr_queued'
                 doc_instance.processing_output = "Document sent for OCR processing on GPU server."
@@ -124,18 +127,18 @@ class DocumentProcessView(UpdateView):
                     f"Scanned document '{doc_instance.title}' sent for OCR. This may take several minutes."
                 )
             else:
-                # Processamento normale per PDF nativi
+                # Processing per PDF nativi
                 index_document_rag.delay(doc_instance.pk)
                 doc_instance.processing_state = 'rag_processing'
                 doc_instance.processing_output = "Indexing started in background."
                 messages.info(
                     self.request, 
-                    f"Processing of '{doc_instance.title}' started! Check 'Search & Results' later."
+                    f"Processing of '{doc_instance.title}' started! Check the dashboard later for updates."
                 )
             
             doc_instance.is_processed = False
         else:
-            messages.success(self.request, f"Document '{doc_instance.title}' details updated.")
+            messages.warning(self.request, f"Document '{doc_instance.title}' is already processed.")
             
         doc_instance.save()
         return redirect(self.success_url)
