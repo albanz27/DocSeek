@@ -112,9 +112,7 @@ class DocumentProcessView(UpdateView):
 
     def form_valid(self, form):
         doc_instance = form.save(commit=False)
-        
-        # Avvia SEMPRE il processing quando il form viene inviato
-        # (a meno che il documento non sia già processato)
+    
         if not Document.objects.get(pk=doc_instance.pk).is_processed:
             
             if doc_instance.document_type == 'scanned':

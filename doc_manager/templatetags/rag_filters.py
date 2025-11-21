@@ -101,24 +101,27 @@ def highlight_query(text, query):
 @register.filter(name='format_distance')
 def format_distance(distance):
     """
-    Formatta la distanza semantica con colore basato sul valore.
+    Formatta la rilevanza semantica (1 - distanza) con colore basato sul valore.
+    Più alto il valore, più rilevante è il risultato.
     """
     try:
         dist = float(distance)
-        if dist < 0.3:
+        relevance = 1 - dist
+        
+        if relevance > 0.7:  
             color_class = "text-success"
             label = "Molto rilevante"
-        elif dist < 0.5:
+        elif relevance > 0.5:  
             color_class = "text-info"
             label = "Rilevante"
-        elif dist < 0.7:
+        elif relevance > 0.3: 
             color_class = "text-warning"
             label = "Moderatamente rilevante"
         else:
             color_class = "text-danger"
             label = "Poco rilevante"
         
-        return mark_safe(f'<span class="{color_class}" title="{label}">{dist:.4f}</span>')
+        return mark_safe(f'<span class="{color_class}" title="{label}">{relevance:.4f}</span>')
     except (ValueError, TypeError):
         return distance
 
