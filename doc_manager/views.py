@@ -70,7 +70,7 @@ class DocumentListView(SearcherRequiredMixin, ListView):
         if self.request.user.profile.is_searcher and search_query:
             try:
                 collection = init_chromadb(COLLECTION_NAME)
-                rag_results = run_queries(collection, [search_query], n_results=5)
+                rag_results = run_queries(collection, [search_query])
                 
                 if rag_results and rag_results[0].get('chunks'):
                     raw_chunks = rag_results[0]['chunks']

@@ -3,9 +3,12 @@ from docling.datamodel.pipeline_options import PdfPipelineOptions
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import re
 from typing import List, Dict, Any
+from .config import get_chunk_size, get_chunk_overlap
 
-MAX_TEXT_CHUNK_SIZE = 500
-CHUNK_OVERLAP_SIZE = 50 
+MAX_TEXT_CHUNK_SIZE = get_chunk_size()
+CHUNK_OVERLAP_SIZE = get_chunk_overlap()
+
+
 LAST_CHUNK_CONTENT = "" 
 
 def flush_text_buffer(buffer, page_num, all_chunks_list):
@@ -38,7 +41,6 @@ def convert_table_to_markdown(table_data, page_num: int) -> str:
     if not grid:
         return f"Tabella vuota a pagina {page_num}"
 
-    #markdown = f"Tabella a pagina {page_num}:\n"
     markdown = ""
     markdown += "| " + " | ".join(cell.text for cell in grid[0]) + " |\n"
     markdown += "| " + " | ".join(["---"] * len(grid[0])) + " |\n"

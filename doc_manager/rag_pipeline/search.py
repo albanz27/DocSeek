@@ -1,4 +1,8 @@
-def run_queries(collection, queries, n_results=3):
+from .config import get_n_results
+
+DEFAULT_N_RESULTS = get_n_results()
+
+def run_queries(collection, queries, n_results=DEFAULT_N_RESULTS):
     """
     Esegue le query sulla collection ChromaDB e restituisce i risultati 
     in una lista strutturata per l'uso nel template Django.
@@ -6,8 +10,6 @@ def run_queries(collection, queries, n_results=3):
     if not queries:
         return []
 
-    print(f"\nEseguo {len(queries)} query su ChromaDB...")
-    print(f"DEBUG: Chunk totali nella collezione ChromaDB: {collection.count()}")
     results = collection.query(query_texts=queries, n_results=n_results)
 
     all_formatted_results = []
@@ -16,8 +18,6 @@ def run_queries(collection, queries, n_results=3):
         docs = results['documents'][q_idx]
         metas = results['metadatas'][q_idx]
         dists = results['distances'][q_idx]
-
-        print(f"DEBUG: Risultati trovati per la query '{query}': {len(docs)}")
 
         query_results = {
             'query': query,
@@ -39,7 +39,6 @@ def run_queries(collection, queries, n_results=3):
         
         all_formatted_results.append(query_results)
 
-    print(f"Query eseguite. Risultati formattati pronti per il template.")
     print(f"Numero totale di query elaborate: {len(all_formatted_results)}")
 
     return all_formatted_results

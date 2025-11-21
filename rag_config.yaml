@@ -1,0 +1,10 @@
+chunking:
+  max_text_chunk_size: 1000
+  chunk_overlap_size: 50
+
+search:
+  n_results: 10
+
+embedding:
+  model_name: "paraphrase-multilingual-MiniLM-L12-v2"
+  collection_name: "docseek_collection"

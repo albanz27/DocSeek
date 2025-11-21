@@ -1,12 +1,12 @@
 import os
 import chromadb
 from chromadb.utils import embedding_functions
-import time
 from django.conf import settings 
 import uuid
+from .config import get_collection_name, get_embedding_model
 
 
-def init_chromadb(collection_name: str):
+def init_chromadb(collection_name=None):
     """
     Inizializza il client ChromaDB e crea (o carica) la collection.
     """
@@ -17,11 +17,13 @@ def init_chromadb(collection_name: str):
         os.makedirs(db_path)
     
     client = chromadb.PersistentClient(path=db_path)
-    model = "paraphrase-multilingual-MiniLM-L12-v2"
-    embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=model)
-    collection = client.get_or_create_collection(name=collection_name, embedding_function=embedding_function)
-    
+    COLLECTION_NAME = get_collection_name()    
+    MODEL_NAME = get_embedding_model()
+    embedding_function = embedding_functions.SentenceTransformerEmbeddingFunction(model_name=MODEL_NAME)
+    collection = client.get_or_create_collection(name=COLLECTION_NAME, embedding_function=embedding_function)
+        
     return collection
+
 
 def add_chunks_to_db(collection, chunks, document_pk: int):
     """
@@ -59,5 +61,5 @@ def delete_document_embeddings(collection, document_pk: int):
     
     if deleted_ids is None:
         deleted_ids = []
-    
+        
     return deleted_ids
