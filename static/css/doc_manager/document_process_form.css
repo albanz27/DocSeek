@@ -93,11 +93,10 @@ body {
     border-bottom: 2px solid #f1f3f5;
 }
 
-/* --------------------  INFO BOX (sostituisce checkbox-box)  -------------------- */
+/* --------------------  INFO BOX  -------------------- */
 .info-box {
     background-color: #e8f4ff;
     border: 2px solid #b3d9ff;
-    border-left: 4px solid #667eea;
     border-radius: 12px;
     padding: 1.25rem;
     transition: all 0.3s ease;
