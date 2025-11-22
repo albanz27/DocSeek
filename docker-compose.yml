@@ -1,11 +1,64 @@
 services:
+
   redis:
-    image: "redis"
+    image: "redis:7-alpine"
+    container_name: docseek-redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
   redis-commander:
     image: "rediscommander/redis-commander:latest"
+    container_name: docseek-redis-commander
     environment:
       - REDIS_HOSTS=local:redis:6379
     ports:
       - "8081:8081"
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  web:
+    build: .
+    container_name: docseek-web
+    ports:
+      - "8000:8000"
+    volumes:
+      - db_data:/app/database
+      - media_data:/app/media
+      - .:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    command: python manage.py runserver 0.0.0.0:8000
+    restart: unless-stopped
+
+  celery:
+    build: .
+    container_name: docseek-celery
+    volumes:
+      - db_data:/app/database
+      - media_data:/app/media
+      - .:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+      - web
+    command: celery -A config worker -l info -Q celery,default,ocr --pool=solo
+    restart: unless-stopped
+    
+volumes:
+  db_data:
+    name: docseek-databases
+  
+  media_data:
+    name: docseek-media
+  
+  redis_data:
+    name: docseek-redis
