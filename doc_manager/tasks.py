@@ -234,7 +234,7 @@ def index_document_rag(document_pk):
         # Aggiorna stato documento
         doc_instance.is_processed = True
         doc_instance.processing_state = 'completed'
-        doc_instance.processing_output = f"✓ Indicizzati {len(chunks)} chunks in ChromaDB. Documento pronto per ricerca semantica."
+        doc_instance.processing_output = f"✓ Indexed {len(chunks)} chunks in ChromaDB. Document is ready for semantic search."   
         doc_instance.save()
         
         print(f"[RAG] ✓ Indicizzazione completata per {doc_instance.title}")

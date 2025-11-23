@@ -25,6 +25,30 @@ def init_chromadb(collection_name=None):
     return collection
 
 
+def clean_metadata(metadata):
+    """
+    Pulisce i metadata rimuovendo valori None e convertendo i tipi non supportati.
+    """
+    cleaned = {}
+    
+    for key, value in metadata.items():
+        # Salta valori None
+        if value is None:
+            continue
+            
+        # Converti tutti i valori in tipi supportati
+        if isinstance(value, (str, int, float, bool)):
+            cleaned[key] = value
+        elif isinstance(value, (list, dict)):
+            # Converti liste e dizionari in stringhe
+            cleaned[key] = str(value)
+        else:
+            # Converti altri tipi in stringa
+            cleaned[key] = str(value)
+    
+    return cleaned
+
+
 def add_chunks_to_db(collection, chunks, document_pk: int):
     """
     Aggiunge i chunk alla collection ChromaDB.
@@ -35,7 +59,9 @@ def add_chunks_to_db(collection, chunks, document_pk: int):
     
     for c in chunks:
         meta = c["metadata"].copy() 
-        meta["document_pk"] = doc_pk_str 
+        meta["document_pk"] = doc_pk_str
+        meta = clean_metadata(meta)
+        
         metadatas_with_pk.append(meta)
 
     ids = [f"{uuid.uuid4()}" for _ in chunks]
