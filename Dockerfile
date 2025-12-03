@@ -8,12 +8,6 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     # librerie linux per docling
-    libgl1 \
-    libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender1 \
-    libgomp1 \
     gcc \
     g++ \
     libpq-dev \
@@ -24,8 +18,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p /app/database /app/media
+RUN mkdir -p /app/database /app/media /app/staticfiles
 
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi:application --bind 0.0.0.0:8000"]
