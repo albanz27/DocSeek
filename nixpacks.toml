@@ -1,8 +1,0 @@
-[phases.setup]
-nixPkgs = ["python311", "gcc"]
-
-[phases.install]
-cmds = ["pip install -r requirements-railway.txt"]
-
-[start]
-cmd = "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn config.wsgi --log-file -"
