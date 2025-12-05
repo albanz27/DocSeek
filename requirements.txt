@@ -189,3 +189,6 @@ yarg==0.1.10
 yarl==1.22.0
 zipp==3.23.0
 zstandard==0.25.0
+python-Levenshtein==0.26.1
+matplotlib==3.8.1
+seaborn

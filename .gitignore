@@ -7,3 +7,8 @@ flask.py
 database/
 pdfjs/
 test.pdf
+plots/
+results/
+datasets/
+convert_funsd.py
+extract_ocr_results.py
