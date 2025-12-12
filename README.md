@@ -25,10 +25,6 @@ DocSeek is an intelligent document management system with RAG (Retrieval-Augment
 
 ## Installation & Setup
 
-### Prerequisites
-
-// TODO
-
 ### Local Setup
 
 1. **Clone the repository**
