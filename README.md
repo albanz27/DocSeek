@@ -167,6 +167,3 @@ python manage.py runserver
    - Click on any document to view PDF
    - Navigate to specific pages from search results
 
----
-
-// todo: add configuration
